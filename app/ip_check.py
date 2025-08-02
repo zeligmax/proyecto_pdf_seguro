@@ -1,5 +1,5 @@
 import requests
-from config import WHITELISTED_IPS
+from .config import WHITELISTED_IPS
 
 def get_public_ip():
     return requests.get("https://api.ipify.org").text
