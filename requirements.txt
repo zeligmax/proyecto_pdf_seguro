@@ -1,0 +1,23 @@
+cryptography>=41.0.0
+requests>=2.31.0
+flask>=2.3.3
+tkinter; platform_system == "Windows"
+pyinstaller; sys_platform == "win32"
+
+Notes:
+
+cryptography: Used for PDF encryption/decryption with Fernet (AES-based).
+
+requests: Used to fetch public IP and send logs to the server.
+
+flask: Needed if you want to run the included remote server (server/server.py).
+
+tkinter: Used for the GUI. It comes pre-installed with most Python distributions, but added for completeness (platform-specific).
+
+pyinstaller: Optional. Used only if you want to compile the GUI into a .exe or .app.
+
+How to use it:
+
+With your virtual environment activated:
+
+pip install -r requirements.txt
