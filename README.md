@@ -22,24 +22,17 @@
 
 Install the required packages with:
 
-```bash
-pip install cryptography
+#pip install cryptography
 
 🚀 Installation
 Clone the repository:
+#git clone https://github.com/zeligmax/proyecto_pdf_seguro.git
+#cd proyecto_pdf_seguro
 
-bash
-Copiar
-Editar
-git clone https://github.com/zeligmax/proyecto_pdf_seguro.git
-cd proyecto_pdf_seguro
 🖥️ GUI Usage
 Run the GUI with:
+#python app/app_gui.py
 
-bash
-Copiar
-Editar
-python app/app_gui.py
 From the interface, you can:
 
 Encrypt a PDF file.
@@ -50,11 +43,8 @@ Add or remove IPs from the whitelist.
 
 🧪 CLI Usage
 Run the app in the terminal:
+#python app/main.py
 
-bash
-Copiar
-Editar
-python app/main.py
 Then follow the prompts:
 
 Option 1: Encrypt a PDF
@@ -95,5 +85,5 @@ Submit pull requests
 Suggest improvements
 
 🧠 Author
-Developed by @zeligmax
+Developed by Zeligmax
 
