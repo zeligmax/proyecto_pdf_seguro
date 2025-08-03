@@ -1,131 +1,99 @@
-Secure PDF Access System
+# 🔐 PDF Secure
 
-🛡️ Project Overview
+**PDF Secure** is a desktop and command-line application that encrypts and decrypts PDF files with an extra layer of IP-based security. Only authorized IP addresses can access the protected documents.
 
-Secure PDF Access System is a desktop application built with Python that allows users to encrypt PDF documents, restrict access based on IP addresses, and automatically report unauthorized access attempts to a remote server. It is designed to protect sensitive PDF files from being accessed, shared, or stolen by unauthorized users.
+---
 
-📦 Features
+## ✨ Features
 
-Encrypt PDF files with AES (Fernet) encryption
+- Encrypt and decrypt PDF files using symmetric encryption (Fernet/AES).
+- IP whitelisting: only specific IPs can decrypt the file.
+- User-friendly graphical interface (Tkinter).
+- Command-line interface (CLI) included.
+- Manageable whitelist of IPs.
+- Cross-platform: works on Windows, Linux, and macOS.
 
-Decrypt PDFs only if the user's IP is authorized (whitelisted)
+---
 
-Detect and log public IP addresses on document access
+## 📦 Requirements
 
-Automatically delete the encrypted PDF if access is denied
+- Python 3.8 or higher
+- Packages: `cryptography`, `tkinter` (usually included with Python)
 
-Upload PDF and download encrypted files via GUI
+Install the required packages with:
 
-Modify whitelist IPs through a simple desktop interface
+```bash
+pip install cryptography
 
-Send logs of access attempts to a remote Flask server
+🚀 Installation
+Clone the repository:
 
-🖥️ Technologies Used
+bash
+Copiar
+Editar
+git clone https://github.com/zeligmax/proyecto_pdf_seguro.git
+cd proyecto_pdf_seguro
+🖥️ GUI Usage
+Run the GUI with:
 
-Python 3.11+
+bash
+Copiar
+Editar
+python app/app_gui.py
+From the interface, you can:
 
-Tkinter (GUI)
+Encrypt a PDF file.
 
-PyInstaller (for packaging)
+Decrypt a .enc file.
 
-Cryptography (Fernet encryption)
+Add or remove IPs from the whitelist.
 
-Requests (for IP detection and logging)
+🧪 CLI Usage
+Run the app in the terminal:
 
-Flask (remote server)
+bash
+Copiar
+Editar
+python app/main.py
+Then follow the prompts:
+
+Option 1: Encrypt a PDF
+
+Option 2: Decrypt a protected file
+
+🔐 IP-Based Access Control
+When encrypting a PDF, a list of authorized IPs is embedded. Only those IPs can decrypt the file, preventing unauthorized distribution.
+
+You can manage the whitelist via the GUI or by editing config.py directly.
 
 📁 Project Structure
-
-PDF_SECURE/
+bash
+Copiar
+Editar
+proyecto_pdf_seguro/
+│
 ├── app/
-│ ├── app_gui.py # Main GUI application
-│ ├── main.py # Console-based version
-│ ├── config.py # Global config (encryption key, IP whitelist)
-│ ├── ip_check.py # IP detection logic
-│ ├── pdf_utils.py # Encryption/decryption functions
-│ └── server_client.py # Log sending to remote server
-├── server/
-│ └── server.py # Flask server for logging access
-├── icono.ico # (Optional) App icon for Windows
+│   ├── app_gui.py        # GUI interface
+│   ├── main.py           # CLI interface
+│   ├── pdf_utils.py      # PDF encryption/decryption logic
+│   ├── ip_check.py       # IP detection and validation
+│   ├── config.py         # App settings: Fernet key and IP whitelist
+│   └── ...
+│
 └── README.md
 
-🚀 Getting Started
+📜 License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-Clone this repository:
+🤝 Contributing
+Contributions are welcome! Feel free to:
 
-git clone https://github.com/your-username/secure-pdf-access.git
-cd secure-pdf-access
+Open issues
 
-Create a virtual environment:
+Submit pull requests
 
-python -m venv venv
-source venv/bin/activate # On Windows: venv\Scripts\activate
+Suggest improvements
 
-Install dependencies:
+🧠 Author
+Developed by @zeligmax
 
-pip install -r requirements.txt
-
-Run the Flask server (for logging):
-
-cd server
-python server.py
-
-Run the desktop app:
-
-cd ../app
-python app_gui.py
-
-🔒 Encrypting a PDF
-
-Open the GUI (app_gui.py)
-
-Click “Select PDF to Encrypt” and choose a file
-
-Click “Encrypt PDF”
-
-The encrypted file will be saved as documento_encriptado.pdf
-
-🔓 Decrypting a PDF
-
-If your IP is whitelisted in config.py → WHITELISTED_IPS, the file will be decrypted
-
-If not, it will be deleted and a log sent to the server
-
-🛡️ Packaging as Executable
-
-To generate a .exe on Windows:
-
-pyinstaller --onefile --windowed --icon=icono.ico app_gui.py --add-data "config.py;."
-
-For macOS (from a Mac):
-
-pyinstaller --onefile --windowed --icon=icono.icns app_gui.py --add-data "config.py:."
-
-📌 Note: Packaging for macOS must be done on a Mac.
-
-📝 Configuration (config.py)
-
-FERNET_KEY = b'...32-byte base64 key...'
-WHITELISTED_IPS = [
-"192.168.1.100", # Internal IP
-"134.255.241.23" # Public IP
-]
-
-🧪 Testing
-
-To test unauthorized access:
-
-Temporarily remove your IP from the whitelist
-
-Run the decryption attempt
-
-Check that the file is deleted and log is sent
-
-📃 License
-
-MIT License — see LICENSE.md for details.
-
-📬 Contact
-
-Developed by ZELIGMAX
-Questions or contributions? Feel free to open an issue or pull request.
