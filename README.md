@@ -257,7 +257,7 @@ python3 app/app_gui.py
 
 Se abrirá una ventana con pestañas:
 
-![GUI Screenshot](https://via.placeholder.com/800x400?text=PDF+Secure+GUI)
+![GUI Screenshot](https://github.com/zeligmax/proyecto_pdf_seguro/blob/main/GUI_Screenshot.png)
 
 #### **Las Pestañas:**
 
