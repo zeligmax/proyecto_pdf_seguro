@@ -14,8 +14,8 @@ if sys.platform == 'win32':
     sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
     sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
-# Agregar el directorio app al path
-sys.path.append(str(Path(__file__).parent / 'app'))
+# Agregar el directorio actual al path
+sys.path.insert(0, str(Path(__file__).parent))
 
 from system_users import SystemUsersDetector
 
