@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 PDF Secure GUI - Version 2.0 - COMPLETO
 Interfaz gráfica para el sistema de PDFs seguros
@@ -11,6 +12,12 @@ from tkinter import ttk, filedialog, messagebox, scrolledtext
 from pathlib import Path
 import threading
 from datetime import datetime
+
+# Configurar encoding UTF-8 para Windows
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 # Agregar directorio app al path
 sys.path.append(str(Path(__file__).parent))

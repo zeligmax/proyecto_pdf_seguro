@@ -95,36 +95,49 @@ class UserAuthManager:
     def authenticate_user(self, user_key, pdf_path):
         """
         Autentica usuario y devuelve información
-        
+
         Args:
             user_key: Clave del usuario
-            pdf_path: Ruta del PDF que intenta acceder
-            
+            pdf_path: Ruta del PDF que intenta acceder (puede ser .pdf o .enc)
+
         Returns:
             tuple: (datos_clave, mensaje) o (None, mensaje_error)
         """
         user_keys = self.load_user_keys()
-        
+
+        # Normalizar la ruta para comparación (quitar extensión y normalizar path)
+        from pathlib import Path
+        pdf_path_normalized = str(Path(pdf_path).absolute()).lower()
+        # Quitar extensión .enc si existe para comparar con .pdf
+        if pdf_path_normalized.endswith('.enc'):
+            pdf_path_base = pdf_path_normalized[:-4]  # Quitar .enc
+        else:
+            pdf_path_base = pdf_path_normalized.rsplit('.', 1)[0] if '.' in pdf_path_normalized else pdf_path_normalized
+
         for key_id, key_data in user_keys.items():
-            if (key_data.get('user_key') == user_key and 
-                key_data.get('pdf_path') == str(pdf_path)):
-                
-                # Verificar expiración
-                try:
-                    expires = datetime.fromisoformat(key_data['expires'])
-                    if datetime.now() > expires:
-                        return None, "Clave expirada"
-                except (ValueError, KeyError):
-                    return None, "Datos de clave corruptos"
-                
-                # Registrar acceso
-                key_data['last_access'] = datetime.now().isoformat()
-                key_data['access_count'] = key_data.get('access_count', 0) + 1
-                
-                self.save_user_keys(user_keys)
-                
-                return key_data, "Autenticado correctamente"
-        
+            if key_data.get('user_key') == user_key:
+                # Normalizar la ruta almacenada
+                stored_path = str(Path(key_data.get('pdf_path', '')).absolute()).lower()
+                stored_path_base = stored_path.rsplit('.', 1)[0] if '.' in stored_path else stored_path
+
+                # Comparar sin extensión para que .pdf y .enc coincidan
+                if stored_path_base == pdf_path_base:
+                    # Verificar expiración
+                    try:
+                        expires = datetime.fromisoformat(key_data['expires'])
+                        if datetime.now() > expires:
+                            return None, "Clave expirada"
+                    except (ValueError, KeyError):
+                        return None, "Datos de clave corruptos"
+
+                    # Registrar acceso
+                    key_data['last_access'] = datetime.now().isoformat()
+                    key_data['access_count'] = key_data.get('access_count', 0) + 1
+
+                    self.save_user_keys(user_keys)
+
+                    return key_data, "Autenticado correctamente"
+
         return None, "Clave no válida o no autorizada para este archivo"
     
     def revoke_user_key(self, user_key):

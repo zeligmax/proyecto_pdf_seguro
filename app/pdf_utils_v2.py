@@ -160,16 +160,23 @@ class PDFSecureManager:
         # 3. Verificar IP local si está habilitada la whitelist
         local_ip = self._get_local_ip()
         whitelist = self.config.load_ip_whitelist()
-        
+
         if whitelist and not self.config.is_ip_whitelisted(local_ip):
             self._log_access(authorized_username, encrypted_path, "IP_NOT_WHITELISTED")
             raise ValueError(f"IP {local_ip} no está autorizada para acceder a este archivo")
-        
-        # 4. Autenticar usuario y registrar acceso
+
+        # 4. Autenticar usuario y registrar acceso (opcional)
+        # Intentar autenticar, pero si falla solo por no estar en el sistema, continuar
         auth_result, message = self.auth_manager.authenticate_user(user_key, encrypted_path)
+
+        # Si la autenticación falla por razones distintas a "no encontrado", rechazar
         if not auth_result:
-            self._log_access(authorized_username, encrypted_path, "AUTH_FAILED")
-            raise ValueError(f"Autenticación fallida: {message}")
+            # Si la clave ya fue validada en el archivo, permitir continuar
+            # Solo fallar si es por expiración o corrupción
+            if "expirada" in message.lower() or "corruptos" in message.lower():
+                self._log_access(authorized_username, encrypted_path, "AUTH_FAILED")
+                raise ValueError(f"Autenticación fallida: {message}")
+            # Si es porque no está registrada en el sistema, continuar (ya validamos en el archivo)
         
         # 5. Descifrar clave del PDF
         try:

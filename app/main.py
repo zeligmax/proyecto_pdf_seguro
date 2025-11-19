@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 PDF Secure CLI - Version 2.0
 Interfaz de línea de comandos para el sistema de PDFs seguros con autenticación por usuario.
@@ -7,6 +8,12 @@ Interfaz de línea de comandos para el sistema de PDFs seguros con autenticació
 import os
 import sys
 from pathlib import Path
+
+# Configurar encoding UTF-8 para Windows
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 # Agregar el directorio app al path
 sys.path.append(str(Path(__file__).parent))
