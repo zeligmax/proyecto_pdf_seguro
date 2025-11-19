@@ -309,20 +309,49 @@ class SystemUsersDetector:
                 if result.returncode == 0:
                     # Parsear la salida para extraer grupos
                     groups = []
-                    in_groups_section = False
+                    in_local_groups = False
+                    in_global_groups = False
 
                     for line in result.stdout.split('\n'):
+                        # Filtrar mensajes del sistema
+                        if ('Se ha completado' in line or
+                            'The command completed' in line or
+                            'successfully' in line.lower()):
+                            break
+
+                        # Detectar sección de grupos locales
                         if 'Miembros del grupo local' in line or 'Local Group Memberships' in line:
-                            in_groups_section = True
+                            in_local_groups = True
+                            in_global_groups = False
+                            # Extraer grupos de la misma línea si los hay (formato: "Miembros del grupo local *Grupo1 *Grupo2")
+                            if '*' in line:
+                                group_parts = line.split('*')[1:]  # Tomar todo después del primer *
+                                for part in group_parts:
+                                    group_name = part.strip().split()[0] if part.strip() else ''
+                                    if group_name and group_name not in ['Ninguno', 'None']:
+                                        groups.append(group_name)
                             continue
 
-                        if in_groups_section and line.strip():
-                            if line.startswith('Miembros del grupo global') or line.startswith('Global Group memberships'):
-                                continue
+                        # Detectar sección de grupos globales
+                        if 'Miembros del grupo global' in line or 'Global Group memberships' in line:
+                            in_local_groups = False
+                            in_global_groups = True
+                            # Extraer grupos de la misma línea
+                            if '*' in line:
+                                group_parts = line.split('*')[1:]
+                                for part in group_parts:
+                                    group_name = part.strip().split()[0] if part.strip() else ''
+                                    if group_name and group_name not in ['Ninguno', 'None']:
+                                        groups.append(group_name)
+                            continue
 
-                            # Extraer nombres de grupos
-                            group_parts = line.strip().replace('*', '').split()
-                            groups.extend([g.strip() for g in group_parts if g.strip()])
+                        # Procesar líneas de continuación con grupos
+                        if (in_local_groups or in_global_groups) and '*' in line:
+                            group_parts = line.split('*')[1:]
+                            for part in group_parts:
+                                group_name = part.strip().split()[0] if part.strip() else ''
+                                if group_name and group_name not in ['Ninguno', 'None']:
+                                    groups.append(group_name)
 
                     return groups
             else:
