@@ -12,14 +12,15 @@
 
 1. [¿Qué es PDF Secure?](#-qué-es-pdf-secure)
 2. [Características Principales](#-características-principales)
-3. [Requisitos del Sistema](#-requisitos-del-sistema)
-4. [Instalación Paso a Paso](#-instalación-paso-a-paso)
-5. [Configuración Inicial](#-configuración-inicial)
-6. [Cómo Usar el Programa](#-cómo-usar-el-programa)
-7. [Ejemplos Prácticos](#-ejemplos-prácticos)
-8. [Preguntas Frecuentes](#-preguntas-frecuentes)
-9. [Solución de Problemas](#-solución-de-problemas)
-10. [Seguridad y Buenas Prácticas](#-seguridad-y-buenas-prácticas)
+3. [🆕 API de Detección de Usuarios](#-api-de-detección-de-usuarios)
+4. [Requisitos del Sistema](#-requisitos-del-sistema)
+5. [Instalación Paso a Paso](#-instalación-paso-a-paso)
+6. [Configuración Inicial](#-configuración-inicial)
+7. [Cómo Usar el Programa](#-cómo-usar-el-programa)
+8. [Ejemplos Prácticos](#-ejemplos-prácticos)
+9. [Preguntas Frecuentes](#-preguntas-frecuentes)
+10. [Solución de Problemas](#-solución-de-problemas)
+11. [Seguridad y Buenas Prácticas](#-seguridad-y-buenas-prácticas)
 
 ---
 
@@ -53,6 +54,50 @@ PDF Secure es un programa que te permite **proteger tus archivos PDF** para que 
 - ⏰ **Expiración Automática**: Las claves caducan después de 30 días (configurable)
 - 🖥️ **Dos Interfaces**: GUI amigable y CLI para expertos
 - 🔒 **Seguridad Mejorada**: Sin contraseñas hardcodeadas en el código
+- 🆕 **API de Usuarios**: Detecta y lista usuarios del sistema operativo
+
+---
+
+## 🆕 **API de Detección de Usuarios**
+
+### **Nueva Funcionalidad: API REST para Detección de Usuarios**
+
+PDF Secure ahora incluye una API REST que permite detectar y listar usuarios del sistema operativo (Windows/Linux/macOS).
+
+#### **¿Para qué sirve?**
+
+✅ **Validar usuarios** antes de cifrar PDFs
+✅ **Autocompletar** nombres de usuarios en la interfaz
+✅ **Auditoría** de usuarios del sistema
+✅ **Integración** con otros sistemas y aplicaciones
+
+#### **Inicio Rápido**
+
+```bash
+# 1. Instalar dependencias
+pip install flask flask-cors
+
+# 2. Ejecutar la API
+python run_users_api.py
+
+# 3. Acceder a la API
+# Navegador: http://localhost:5000
+# curl: curl http://localhost:5000/api/users
+```
+
+#### **Endpoints Principales**
+
+- `GET /api/users` - Lista todos los usuarios del sistema
+- `GET /api/users/current` - Usuario actual
+- `GET /api/users/logged` - Usuarios conectados
+- `GET /api/system` - Información del sistema
+- `GET /api/report` - Reporte completo
+
+#### **Documentación Completa**
+
+📖 Ver [API_USERS_GUIDE.md](API_USERS_GUIDE.md) para documentación detallada
+🚀 Ver [QUICKSTART_API.md](QUICKSTART_API.md) para inicio rápido
+💻 Ver [ejemplo_uso_api.py](ejemplo_uso_api.py) para ejemplos de código
 
 ---
 
