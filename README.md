@@ -1,6 +1,6 @@
-# 📄 PDF Secure v2.0 - Guía Completa para Principiantes
+# 📄 PDF Secure v2.1 - Guía Completa para Principiantes
 
-> Sistema de cifrado de PDFs con autenticación por usuario y control de acceso basado en IP local.
+> Sistema de cifrado de PDFs con autenticación por usuario, visualizador en memoria y control de acceso basado en IP local.
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -47,7 +47,7 @@ PDF Secure es un programa que te permite **proteger tus archivos PDF** para que 
 
 ## ✨ **Características Principales**
 
-- 🔐 **Cifrado AES-256**: Nivel militar de seguridad
+- 🔐 **Cifrado AES-256**: Nivel militar de seguridad (v2.1 con metadatos cifrados)
 - 👥 **Claves por Usuario**: Cada persona tiene su propia clave única
 - 🌐 **Control de IP Local**: Whitelist opcional de dispositivos autorizados
 - 📊 **Auditoría Completa**: Registro detallado de todos los accesos
@@ -55,6 +55,7 @@ PDF Secure es un programa que te permite **proteger tus archivos PDF** para que 
 - 🖥️ **Dos Interfaces**: GUI amigable y CLI para expertos
 - 🔒 **Seguridad Mejorada**: Sin contraseñas hardcodeadas en el código
 - 🆕 **API de Usuarios**: Detecta y lista usuarios del sistema operativo
+- 👁️ **Visualizador en Memoria**: Ver PDFs sin guardarlos en disco (solo lectura)
 
 ---
 
@@ -174,6 +175,8 @@ Si falta algún archivo, copia el código de los artifacts proporcionados.
 
 Abre una terminal en la carpeta del proyecto y ejecuta:
 
+**Dependencias Básicas (Obligatorias):**
+
 **Windows:**
 ```cmd
 pip install cryptography
@@ -184,6 +187,14 @@ pip install cryptography
 pip3 install cryptography
 ```
 
+**Dependencias Opcionales (Para visualizador de PDF):**
+
+Si quieres usar el visualizador de PDF integrado en la GUI:
+
+```bash
+pip install PyMuPDF Pillow
+```
+
 **O usando el archivo requirements.txt:**
 ```bash
 pip install -r requirements.txt
@@ -192,6 +203,7 @@ pip install -r requirements.txt
 Espera a que termine la instalación. Verás algo como:
 ```
 Successfully installed cryptography-41.0.7
+Successfully installed PyMuPDF-1.26.6 Pillow-10.x.x
 ```
 
 ✅ ¡Listo! Ya tienes todo instalado.
@@ -307,7 +319,9 @@ Se abrirá una ventana con pestañas:
 #### **Las Pestañas:**
 
 1. **🔒 Cifrar PDF**: Para proteger tus archivos
-2. **🔓 Descifrar PDF**: Para abrir archivos protegidos
+2. **🔓 Descifrar PDF**: Para abrir archivos protegidos (2 opciones disponibles)
+   - **👁️ Ver PDF**: Visualiza el PDF en memoria sin guardarlo en disco (solo lectura)
+   - **🔓 Descifrar y Guardar**: Descifra y guarda el PDF en disco como antes
 3. **👥 Usuarios**: Gestionar claves de usuario
 4. **🌐 IPs**: Configurar qué dispositivos pueden acceder
 5. **📊 Logs**: Ver quién accedió a qué archivos
@@ -433,7 +447,9 @@ Usuarios: juan, maria, carlos
 
 Imagina que María recibió el archivo `contrato_secreto.enc` y su clave.
 
-#### **Usando la GUI:**
+#### **Opción A: Ver PDF sin guardarlo (Nuevo en v2.1)**
+
+Esta opción te permite ver el PDF sin crear ningún archivo en disco (máxima seguridad).
 
 1. **Abre la GUI**: `python3 app/app_gui.py`
 
@@ -447,12 +463,26 @@ Imagina que María recibió el archivo `contrato_secreto.enc` y su clave.
    ```
    z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4j3i2h1g0
    ```
-   
+
 5. **(Opcional) Marca "Mostrar clave"** para verificar que la escribiste bien
 
-6. **Click en "🔓 Descifrar PDF"**
+6. **Click en "👁️ Ver PDF"**
 
-7. **¡Listo!** El PDF descifrado aparece en la misma carpeta con un nombre como:
+7. **¡Listo!** Se abre una ventana emergente mostrando el PDF:
+   - ✅ Puedes ver todas las páginas con scroll
+   - ✅ El PDF NO se guarda en disco
+   - ✅ Es solo lectura (no se puede editar)
+   - ✅ Mayor seguridad: no deja rastros en disco
+
+#### **Opción B: Descifrar y guardar en disco (Tradicional)**
+
+Si necesitas guardar el PDF para editarlo o usarlo con otras aplicaciones:
+
+1. **Sigue los pasos 1-5 del Opción A**
+
+2. **Click en "🔓 Descifrar y Guardar"** (en lugar de "Ver PDF")
+
+3. **¡Listo!** El PDF descifrado aparece en la misma carpeta con un nombre como:
    ```
    decrypted_20250115_143022_contrato_secreto.pdf
    ```
@@ -579,6 +609,29 @@ Verás información como:
 - Archivo accedido
 - IP desde donde se accedió
 - Si el acceso fue exitoso o fallido
+- Tipo de acceso (VIEW_ATTEMPT o DECRYPT_ATTEMPT)
+
+---
+
+### **¿Cuál es la diferencia entre "Ver PDF" y "Descifrar y Guardar"?**
+
+**👁️ Ver PDF (Nuevo en v2.1):**
+- ✅ El PDF se descifra **solo en memoria** (RAM)
+- ✅ **NO se guarda** ningún archivo en disco
+- ✅ Mayor seguridad: no deja rastros
+- ✅ Solo lectura: no se puede editar
+- ✅ Ideal para consultas rápidas o información sensible
+- ⚠️ Requiere PyMuPDF instalado
+
+**🔓 Descifrar y Guardar:**
+- ✅ El PDF se descifra y **se guarda en disco**
+- ✅ Puedes editarlo con cualquier programa
+- ✅ El archivo queda disponible sin necesidad de clave
+- ⚠️ Menos seguro: el archivo queda en disco sin protección
+
+**¿Cuándo usar cada uno?**
+- **Ver PDF**: Para revisar documentos confidenciales sin dejar rastro
+- **Descifrar y Guardar**: Cuando necesitas editar o trabajar con el PDF
 
 ---
 
@@ -678,6 +731,29 @@ Debería abrir una ventana de prueba.
 
 ---
 
+### **Problema: El botón "Ver PDF" no muestra el PDF**
+
+**Causa**: PyMuPDF no está instalado.
+
+**Solución**:
+```bash
+pip install PyMuPDF Pillow
+```
+
+Luego reinicia la aplicación y vuelve a intentar.
+
+**Nota**: Si no puedes instalar PyMuPDF, usa el botón "Descifrar y Guardar" en su lugar.
+
+---
+
+### **Problema: El visualizador muestra páginas borrosas**
+
+**Causa**: Renderizado a baja resolución.
+
+**Solución**: El visualizador ya está configurado con zoom 2.0 para mejor calidad. Si aún así se ve borroso, usa "Descifrar y Guardar" y abre el PDF con un visor profesional.
+
+---
+
 ## 🔒 **Seguridad y Buenas Prácticas**
 
 ### **✅ Recomendaciones de Seguridad**
@@ -688,17 +764,24 @@ Debería abrir una ventana de prueba.
    - ✅ Cambia claves periódicamente (cada 30-60 días)
    - ❌ No escribas claves en papeles o archivos de texto sin cifrar
 
-2. **Backups**:
+2. **Visualización de PDFs** (NUEVO):
+   - ✅ **Usa "Ver PDF" en lugar de "Descifrar y Guardar"** cuando solo necesites consultar el documento
+   - ✅ El visualizador en memoria NO deja rastros en disco
+   - ✅ Mayor seguridad para información confidencial
+   - ⚠️ Si descifras y guardas, elimina el archivo cuando termines
+
+3. **Backups**:
    - ✅ Haz backup regular de `~/.pdf_secure/`
    - ✅ Guarda tu clave maestra en un lugar seguro
    - ✅ Documenta qué usuarios tienen acceso a qué archivos
 
-3. **Monitoreo**:
+4. **Monitoreo**:
    - ✅ Revisa los logs semanalmente
    - ✅ Investiga intentos de acceso fallidos
+   - ✅ Diferencia entre VIEW_ATTEMPT y DECRYPT_ATTEMPT en los logs
    - ✅ Limpia claves expiradas regularmente
 
-4. **Control de Acceso**:
+5. **Control de Acceso**:
    - ✅ Usa whitelist de IPs cuando sea posible
    - ✅ Revoca acceso inmediatamente cuando sea necesario
    - ✅ Usa descripciones claras para cada IP autorizada
@@ -747,9 +830,14 @@ Este proyecto está licenciado bajo la Licencia MIT. Ver archivo [LICENSE](LICEN
 
 ## 👨‍💻 **Autor**
 
-**Desarrollado por**: Zeligmax  
-**Versión**: 2.0  
-**Fecha**: Enero 2025  
+**Desarrollado por**: Zeligmax
+**Versión**: 2.1
+**Fecha**: Enero 2025
+
+**Novedades v2.1**:
+- Visualizador de PDF en memoria (sin guardar en disco)
+- Metadatos cifrados para mayor seguridad
+- Logs diferenciados (VIEW_ATTEMPT vs DECRYPT_ATTEMPT)  
 
 ---
 
@@ -767,13 +855,19 @@ git clone https://github.com/zeligmax/proyecto_pdf_seguro.git
 cd proyecto_pdf_seguro
 
 # 2. Instala dependencias
-pip install cryptography
+pip install cryptography PyMuPDF Pillow
 
 # 3. Configura la clave maestra
 export PDF_SECURE_MASTER_KEY=$(python3 -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
 
 # 4. ¡Inicia la aplicación!
 python3 app/app_gui.py
+
+# 5. Prueba el visualizador en memoria:
+#    - Ve a "Descifrar PDF"
+#    - Selecciona un archivo .enc
+#    - Ingresa tu clave
+#    - Click en "Ver PDF" para visualizar sin guardar en disco
 ```
 
 ---
@@ -786,6 +880,6 @@ python3 app/app_gui.py
 
 **Si este proyecto te resultó útil, ¡dale una ⭐ en GitHub!**
 
-[⬆ Volver arriba](#-pdf-secure-v20---guía-completa-para-principiantes)
+[⬆ Volver arriba](#-pdf-secure-v21---guía-completa-para-principiantes)
 
 </div>

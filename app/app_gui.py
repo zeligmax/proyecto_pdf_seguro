@@ -12,6 +12,8 @@ from tkinter import ttk, filedialog, messagebox, scrolledtext
 from pathlib import Path
 import threading
 from datetime import datetime
+import io
+from PIL import Image, ImageTk
 
 # Configurar encoding UTF-8 para Windows
 if sys.platform == 'win32':
@@ -190,9 +192,10 @@ class PDFSecureGUI:
         # Botones
         btn_frame = ttk.Frame(main)
         btn_frame.pack(fill=tk.X, pady=20)
-        ttk.Button(btn_frame, text="🔓 Descifrar", command=self.decrypt_pdf).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text="👁️ Ver PDF", command=self.view_pdf, width=15).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text="🔓 Descifrar y Guardar", command=self.decrypt_pdf, width=20).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(btn_frame, text="🧹 Limpiar", command=self.clear_decrypt).pack(side=tk.LEFT)
-        
+
         self.decrypt_status = ttk.Label(main, text="")
         self.decrypt_status.pack()
     
@@ -508,7 +511,134 @@ class PDFSecureGUI:
                 self.root.after(0, lambda: self.status_label.config(text="Error"))
         
         threading.Thread(target=worker, daemon=True).start()
-    
+
+    def view_pdf(self):
+        """Visualiza el PDF descifrado en memoria sin guardarlo"""
+        if not self.pdf_manager:
+            messagebox.showerror("Error", "Sistema no inicializado correctamente")
+            return
+
+        enc = self.encrypted_path_var.get().strip()
+        key = self.user_key_var.get().strip()
+
+        if not all([enc, key]):
+            messagebox.showerror("Error", "Completa todos los campos")
+            return
+
+        if not Path(enc).exists():
+            messagebox.showerror("Error", "Archivo no existe")
+            return
+
+        def worker():
+            try:
+                self.status_label.config(text="Descifrando en memoria...")
+                pdf_bytes, original_filename = self.pdf_manager.decrypt_pdf_to_memory(enc, key)
+
+                # Abrir ventana de visualización en el thread principal
+                self.root.after(0, lambda: self.show_pdf_viewer(pdf_bytes, original_filename))
+                self.root.after(0, lambda: self.decrypt_status.config(text=f"✅ Visualizando: {original_filename}", foreground='green'))
+                self.root.after(0, lambda: self.status_label.config(text="Completado"))
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("Error", str(e)))
+                self.root.after(0, lambda: self.decrypt_status.config(text="❌ Error", foreground='red'))
+                self.root.after(0, lambda: self.status_label.config(text="Error"))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def show_pdf_viewer(self, pdf_bytes, filename):
+        """Muestra ventana con visualizador de PDF"""
+        # Crear ventana emergente
+        viewer = tk.Toplevel(self.root)
+        viewer.title(f"Visualizador PDF - {filename} (Solo lectura)")
+        viewer.geometry("800x900")
+
+        # Frame principal
+        main_frame = ttk.Frame(viewer)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Encabezado
+        header = ttk.Frame(main_frame)
+        header.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(header, text=f"📄 {filename}", font=('Arial', 12, 'bold')).pack(side=tk.LEFT)
+        ttk.Label(header, text="(Solo lectura - No guardado en disco)", foreground='blue').pack(side=tk.LEFT, padx=(10, 0))
+
+        # Intentar convertir PDF a imágenes
+        try:
+            import fitz  # PyMuPDF
+
+            # Abrir PDF desde bytes
+            pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+
+            # Frame con scroll para las páginas
+            canvas = tk.Canvas(main_frame)
+            scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+            scrollable_frame = ttk.Frame(canvas)
+
+            scrollable_frame.bind(
+                "<Configure>",
+                lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+            )
+
+            canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+            canvas.configure(yscrollcommand=scrollbar.set)
+
+            # Renderizar cada página
+            for page_num in range(len(pdf_document)):
+                page = pdf_document[page_num]
+
+                # Convertir a imagen (zoom 2.0 para mejor calidad)
+                mat = fitz.Matrix(2.0, 2.0)
+                pix = page.get_pixmap(matrix=mat)
+
+                # Convertir a formato PIL
+                img_data = pix.tobytes("ppm")
+                img = Image.open(io.BytesIO(img_data))
+
+                # Redimensionar si es muy grande
+                max_width = 750
+                if img.width > max_width:
+                    ratio = max_width / img.width
+                    new_size = (max_width, int(img.height * ratio))
+                    img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+                # Convertir a PhotoImage
+                photo = ImageTk.PhotoImage(img)
+
+                # Crear label con la imagen
+                page_frame = ttk.LabelFrame(scrollable_frame, text=f"Página {page_num + 1}/{len(pdf_document)}", padding=5)
+                page_frame.pack(fill=tk.X, pady=5)
+
+                img_label = ttk.Label(page_frame, image=photo)
+                img_label.image = photo  # Mantener referencia
+                img_label.pack()
+
+            pdf_document.close()
+
+            canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        except ImportError:
+            # Si PyMuPDF no está disponible, mostrar mensaje
+            error_frame = ttk.Frame(main_frame)
+            error_frame.pack(fill=tk.BOTH, expand=True)
+
+            ttk.Label(error_frame, text="⚠️ PyMuPDF no está instalado", font=('Arial', 14, 'bold'), foreground='orange').pack(pady=20)
+            ttk.Label(error_frame, text="Para visualizar PDFs en la aplicación, instala PyMuPDF:", wraplength=600).pack(pady=10)
+
+            code_frame = ttk.Frame(error_frame)
+            code_frame.pack(pady=10)
+            code_text = tk.Text(code_frame, height=2, width=50, bg='#f0f0f0')
+            code_text.insert('1.0', 'pip install PyMuPDF')
+            code_text.config(state='disabled')
+            code_text.pack()
+
+            ttk.Label(error_frame, text=f"Tamaño del PDF: {len(pdf_bytes):,} bytes", foreground='gray').pack(pady=20)
+            ttk.Label(error_frame, text="El archivo ha sido descifrado en memoria correctamente.", foreground='green').pack()
+            ttk.Label(error_frame, text="Usa el botón 'Descifrar y Guardar' si deseas guardarlo en disco.", wraplength=600).pack(pady=10)
+
+        # Botón cerrar
+        ttk.Button(main_frame, text="Cerrar", command=viewer.destroy).pack(pady=(10, 0))
+
     # Usuarios
     def refresh_users(self):
         if not self.auth_manager:

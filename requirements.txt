@@ -2,6 +2,8 @@ cryptography>=41.0.0
 requests>=2.31.0
 flask>=2.3.3
 flask-cors>=4.0.0
+PyMuPDF>=1.23.0
+Pillow>=10.0.0
 pathlib
 tkinter; platform_system == "Windows"
 pyinstaller; sys_platform == "win32"
@@ -17,6 +19,10 @@ pywin32; sys_platform == "win32"
 
 #flask-cors: Enables CORS (Cross-Origin Resource Sharing) for the Users API.
 
+#PyMuPDF: Used for the in-memory PDF viewer to render PDF pages as images. Enables viewing PDFs without saving to disk (v2.1 feature).
+
+#Pillow: Image processing library used with PyMuPDF to display rendered PDF pages in the GUI viewer.
+
 #pywin32: Windows-specific library for WMI access (better user detection on Windows).
 
 #tkinter: Used for the GUI. It comes pre-installed with most Python distributions, but added for completeness (platform-specific).
@@ -28,3 +34,14 @@ pywin32; sys_platform == "win32"
 #With your virtual environment activated:
 
 #pip install -r requirements.txt
+
+#Optional installations:
+
+#For minimal installation (only encryption/decryption without PDF viewer):
+#pip install cryptography
+
+#For full installation with in-memory PDF viewer (recommended):
+#pip install cryptography PyMuPDF Pillow
+
+#Note: PyMuPDF and Pillow are optional. If not installed, the "View PDF" button will show a message
+#explaining how to install them, but you can still use "Decrypt and Save" to decrypt PDFs normally.

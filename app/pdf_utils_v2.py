@@ -252,7 +252,104 @@ class PDFSecureManager:
             self.config.increment_ip_access_count(local_ip)
 
         return str(output_path)
-    
+
+    def decrypt_pdf_to_memory(self, encrypted_path, user_key):
+        """
+        Descifra PDF en memoria sin guardarlo en disco (para visualización)
+
+        Args:
+            encrypted_path: Ruta del archivo cifrado
+            user_key: Clave del usuario (se limpia automáticamente)
+
+        Returns:
+            tuple: (bytes del PDF descifrado, nombre original del archivo)
+        """
+
+        # Limpiar la clave de espacios al inicio/final
+        user_key = user_key.strip()
+
+        if not Path(encrypted_path).exists():
+            raise FileNotFoundError(f"El archivo cifrado no existe: {encrypted_path}")
+
+        # 1. Cargar archivo cifrado
+        try:
+            with open(encrypted_path, 'r', encoding='utf-8') as f:
+                secure_data = json.load(f)
+        except json.JSONDecodeError:
+            raise ValueError("El archivo cifrado está corrupto o no es válido")
+        except Exception as e:
+            raise ValueError(f"Error al cargar archivo: {str(e)}")
+
+        # 2. Verificar que la clave de usuario está autorizada
+        user_authorized = False
+        authorized_username = None
+
+        user_keys_in_file = secure_data.get('user_keys', {})
+
+        for username, stored_key in user_keys_in_file.items():
+            # Limpiar también la clave almacenada
+            stored_key_clean = stored_key.strip()
+
+            if stored_key_clean == user_key:
+                user_authorized = True
+                authorized_username = username
+                break
+
+        if not user_authorized:
+            # Mensaje de error más informativo
+            error_msg = f"Clave de usuario no autorizada para este archivo.\n"
+            error_msg += f"Usuarios autorizados: {', '.join(user_keys_in_file.keys())}"
+
+            self._log_view(None, encrypted_path, "UNAUTHORIZED_KEY")
+            raise ValueError(error_msg)
+
+        # 3. Verificar IP local si está habilitada la whitelist
+        local_ip = self._get_local_ip()
+        whitelist = self.config.load_ip_whitelist()
+
+        if whitelist and not self.config.is_ip_whitelisted(local_ip):
+            self._log_view(authorized_username, encrypted_path, "IP_NOT_WHITELISTED")
+            raise ValueError(f"IP {local_ip} no está autorizada para acceder a este archivo")
+
+        # 4. Autenticar usuario (opcional)
+        auth_result, message = self.auth_manager.authenticate_user(user_key, encrypted_path)
+
+        if not auth_result:
+            if "expirada" in message.lower() or "corruptos" in message.lower():
+                self._log_view(authorized_username, encrypted_path, "AUTH_FAILED")
+                raise ValueError(f"Autenticación fallida: {message}")
+
+        # 5. Descifrar clave del PDF
+        try:
+            encrypted_pdf_key = bytes.fromhex(secure_data['encrypted_pdf_key'])
+            pdf_key = self.master_fernet.decrypt(encrypted_pdf_key)
+        except Exception as e:
+            self._log_view(authorized_username, encrypted_path, "DECRYPTION_FAILED")
+            raise ValueError(f"Error al descifrar la clave del PDF: {str(e)}")
+
+        # 6. Descifrar PDF en memoria
+        try:
+            pdf_fernet = Fernet(pdf_key)
+            encrypted_pdf = bytes.fromhex(secure_data['encrypted_pdf'])
+            decrypted_pdf = pdf_fernet.decrypt(encrypted_pdf)
+        except Exception as e:
+            self._log_view(authorized_username, encrypted_path, "PDF_DECRYPTION_FAILED")
+            raise ValueError(f"Error al descifrar el PDF: {str(e)}")
+
+        # 7. Descifrar metadatos
+        metadata = self._decrypt_metadata(secure_data)
+
+        # 8. Log del acceso exitoso (VIEW en lugar de DECRYPT)
+        self._log_view(authorized_username, encrypted_path, "SUCCESS")
+
+        # 9. Actualizar contador de acceso IP
+        if whitelist:
+            self.config.increment_ip_access_count(local_ip)
+
+        # 10. Retornar bytes del PDF y nombre original
+        original_filename = metadata.get('original_filename', 'documento.pdf')
+        return decrypted_pdf, original_filename
+
     def get_file_info(self, encrypted_path):
         """
         Obtiene información sobre un archivo cifrado sin descifrarlo
@@ -317,7 +414,20 @@ class PDFSecureManager:
             'status': status,
             'ip': self._get_local_ip()
         }
-        
+
+        self._write_log_entry(log_entry)
+
+    def _log_view(self, username, pdf_path, status):
+        """Registra visualizaciones en memoria (sin descifrado completo)"""
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'action': 'VIEW_ATTEMPT',
+            'username': username if username else 'Unknown',
+            'pdf_path': str(pdf_path),
+            'status': status,
+            'ip': self._get_local_ip()
+        }
+
         self._write_log_entry(log_entry)
     
     def _write_log_entry(self, entry):
