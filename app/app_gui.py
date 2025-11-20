@@ -26,6 +26,7 @@ from config import SecureConfig
 from user_auth import UserAuthManager
 from pdf_utils_v2 import PDFSecureManager
 from ip_check import IPChecker
+from api_manager import get_api_manager
 
 class PDFSecureGUI:
     def __init__(self):
@@ -50,6 +51,7 @@ class PDFSecureGUI:
         self.auth_manager = None
         self.pdf_manager = None
         self.ip_checker = None
+        self.api_manager = None
         
         # CREAR WIDGETS (incluye status_label)
         self.create_widgets()
@@ -60,7 +62,8 @@ class PDFSecureGUI:
             self.auth_manager = UserAuthManager(self.config)
             self.pdf_manager = PDFSecureManager(self.config, self.auth_manager)
             self.ip_checker = IPChecker(self.config)
-            
+            self.api_manager = get_api_manager()
+
             # Actualizar status
             self.status_label.config(text="✅ Sistema listo")
             
@@ -102,6 +105,7 @@ class PDFSecureGUI:
         self.create_users_tab()
         self.create_ips_tab()
         self.create_logs_tab()
+        self.create_api_tab()
         
         # Barra de estado
         self.status_frame = ttk.Frame(self.root)
@@ -342,7 +346,64 @@ class PDFSecureGUI:
         self.logs_text.pack(fill=tk.BOTH, expand=True)
         
         self.refresh_logs()
-    
+
+    def create_api_tab(self):
+        """Crea la pestaña de gestión de la API de Usuarios"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="🔍 API")
+
+        main = ttk.Frame(frame)
+        main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        ttk.Label(main, text="🔍 API de Detección de Usuarios", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
+        # Estado de la API
+        status_frame = ttk.LabelFrame(main, text="📡 Estado del Servidor", padding=15)
+        status_frame.pack(fill=tk.X, pady=(0, 15))
+
+        self.api_status_label = ttk.Label(status_frame, text="⭕ DETENIDA", font=('Arial', 12, 'bold'))
+        self.api_status_label.pack(anchor=tk.W, pady=(0, 5))
+
+        self.api_url_label = ttk.Label(status_frame, text="URL: N/A")
+        self.api_url_label.pack(anchor=tk.W, pady=(0, 5))
+
+        self.api_health_label = ttk.Label(status_frame, text="")
+        self.api_health_label.pack(anchor=tk.W)
+
+        # Controles
+        controls_frame = ttk.LabelFrame(main, text="⚙️ Controles", padding=15)
+        controls_frame.pack(fill=tk.X, pady=(0, 15))
+
+        btn_frame = ttk.Frame(controls_frame)
+        btn_frame.pack(fill=tk.X)
+
+        ttk.Button(btn_frame, text="▶️ Iniciar API", command=self.start_api, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text="⏹️ Detener API", command=self.stop_api, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text="🔄 Actualizar Estado", command=self.refresh_api_status, width=20).pack(side=tk.LEFT, padx=(0, 10))
+
+        btn_frame2 = ttk.Frame(controls_frame)
+        btn_frame2.pack(fill=tk.X, pady=(10, 0))
+
+        ttk.Button(btn_frame2, text="🌐 Abrir en Navegador", command=self.open_api_browser, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame2, text="👥 Listar Usuarios", command=self.list_system_users, width=20).pack(side=tk.LEFT)
+
+        # Lista de usuarios del sistema
+        users_frame = ttk.LabelFrame(main, text="👥 Usuarios del Sistema", padding=15)
+        users_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.system_users_text = scrolledtext.ScrolledText(users_frame, height=15, font=('Courier', 10))
+        self.system_users_text.pack(fill=tk.BOTH, expand=True)
+
+        # Info
+        info_frame = ttk.Frame(main)
+        info_frame.pack(fill=tk.X, pady=(10, 0))
+
+        ttk.Label(info_frame, text="💡 La API permite detectar usuarios del sistema operativo",
+                 foreground='blue').pack(anchor=tk.W)
+
+        # Actualizar estado inicial
+        self.refresh_api_status()
+
     # Métodos de archivos
     def browse_pdf(self):
         f = filedialog.askopenfilename(filetypes=[("PDF", "*.pdf")])
@@ -589,13 +650,16 @@ class PDFSecureGUI:
     
     # Logs
     def refresh_logs(self):
+        if not self.pdf_manager:
+            return
+
         try:
             limit = int(self.log_limit_var.get())
             logs = self.pdf_manager.get_access_logs(limit)
-            
+
             self.logs_text.config(state=tk.NORMAL)
             self.logs_text.delete(1.0, tk.END)
-            
+
             if not logs:
                 self.logs_text.insert(tk.END, "Sin logs\n")
             else:
@@ -604,7 +668,7 @@ class PDFSecureGUI:
                     icon = "🔒" if log.get('action') == 'ENCRYPT' else "✅" if log.get('status') == 'SUCCESS' else "❌"
                     line = f"{icon} {log.get('timestamp', '')[:19]} | {log.get('action', '')} | {log.get('username', 'N/A')} | {log.get('ip', '')}\n"
                     self.logs_text.insert(tk.END, line)
-            
+
             self.logs_text.config(state=tk.DISABLED)
         except Exception as e:
             messagebox.showerror("Error", str(e))
@@ -641,8 +705,140 @@ class PDFSecureGUI:
     
     def on_closing(self):
         if messagebox.askokcancel("Salir", "¿Cerrar?"):
+            # Detener API si está ejecutándose
+            if self.api_manager and self.api_manager.is_running():
+                self.api_manager.stop()
             self.root.destroy()
-    
+
+    # Métodos de gestión de API
+    def start_api(self):
+        """Inicia el servidor de la API"""
+        if not self.api_manager:
+            messagebox.showerror("Error", "API Manager no inicializado")
+            return
+
+        self.status_label.config(text="Iniciando API...")
+
+        def worker():
+            success, message = self.api_manager.start(in_thread=True)
+            if success:
+                self.root.after(0, lambda: messagebox.showinfo("Éxito", message))
+                self.root.after(0, lambda: self.status_label.config(text="API iniciada"))
+            else:
+                self.root.after(0, lambda: messagebox.showerror("Error", message))
+                self.root.after(0, lambda: self.status_label.config(text="Error al iniciar API"))
+
+            self.root.after(0, self.refresh_api_status)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def stop_api(self):
+        """Detiene el servidor de la API"""
+        if not self.api_manager:
+            messagebox.showerror("Error", "API Manager no inicializado")
+            return
+
+        self.status_label.config(text="Deteniendo API...")
+
+        def worker():
+            success, message = self.api_manager.stop()
+            if success:
+                self.root.after(0, lambda: messagebox.showinfo("Éxito", message))
+                self.root.after(0, lambda: self.status_label.config(text="API detenida"))
+            else:
+                self.root.after(0, lambda: messagebox.showerror("Error", message))
+                self.root.after(0, lambda: self.status_label.config(text="Error al detener API"))
+
+            self.root.after(0, self.refresh_api_status)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def refresh_api_status(self):
+        """Actualiza el estado de la API en la interfaz"""
+        if not self.api_manager:
+            return
+
+        status = self.api_manager.get_status()
+
+        if status['running']:
+            self.api_status_label.config(text="✅ EJECUTÁNDOSE", foreground='green')
+            self.api_url_label.config(text=f"URL: {status['url']}")
+
+            if status.get('healthy'):
+                health_text = "❤️ Salud: ✅ Saludable"
+                if 'version' in status:
+                    health_text += f" | Versión: {status['version']}"
+                self.api_health_label.config(text=health_text, foreground='green')
+            else:
+                self.api_health_label.config(text="⚠️ Salud: Responde con errores", foreground='orange')
+        else:
+            self.api_status_label.config(text="⭕ DETENIDA", foreground='red')
+            self.api_url_label.config(text="URL: N/A")
+            self.api_health_label.config(text="")
+
+    def open_api_browser(self):
+        """Abre el navegador en la URL de la API"""
+        if not self.api_manager:
+            messagebox.showerror("Error", "API Manager no inicializado")
+            return
+
+        success, message = self.api_manager.open_browser()
+        if success:
+            self.status_label.config(text="Navegador abierto")
+        else:
+            messagebox.showerror("Error", message)
+
+    def list_system_users(self):
+        """Lista los usuarios del sistema usando la API"""
+        if not self.api_manager:
+            messagebox.showerror("Error", "API Manager no inicializado")
+            return
+
+        self.status_label.config(text="Obteniendo usuarios...")
+        self.system_users_text.delete(1.0, tk.END)
+
+        def worker():
+            users_data = self.api_manager.get_users(filter_type='all', format_type='json')
+
+            if users_data and users_data.get('success'):
+                users = users_data.get('data', [])
+                total = users_data.get('count', 0)
+
+                result = f"{'='*60}\n"
+                result += f"USUARIOS DEL SISTEMA - Total: {total}\n"
+                result += f"{'='*60}\n\n"
+
+                for i, user in enumerate(users, 1):
+                    username = user.get('username', 'Unknown')
+                    result += f"{i}. {username}\n"
+
+                    # Info adicional según el SO
+                    if 'full_name' in user and user['full_name']:
+                        result += f"   Nombre completo: {user['full_name']}\n"
+                    if 'home_directory' in user:
+                        result += f"   Home: {user['home_directory']}\n"
+                    if 'shell' in user:
+                        result += f"   Shell: {user['shell']}\n"
+                    if 'uid' in user:
+                        result += f"   UID: {user['uid']}\n"
+
+                    is_system = user.get('is_system_user', False)
+                    result += f"   Tipo: {'Sistema' if is_system else 'Usuario'}\n"
+
+                    result += "\n"
+
+                self.root.after(0, lambda r=result: self.system_users_text.insert(1.0, r))
+                self.root.after(0, lambda: self.status_label.config(text=f"{total} usuarios obtenidos"))
+            else:
+                error_msg = "❌ No se pudo obtener la lista de usuarios\n\n"
+                error_msg += "Asegúrate de que la API esté ejecutándose.\n"
+                error_msg += "Usa el botón '▶️ Iniciar API' para iniciarla."
+
+                self.root.after(0, lambda: self.system_users_text.insert(1.0, error_msg))
+                self.root.after(0, lambda: self.status_label.config(text="Error obteniendo usuarios"))
+
+        threading.Thread(target=worker, daemon=True).start()
+
     def run(self):
         self.update_status()
         self.root.mainloop()

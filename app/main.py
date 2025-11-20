@@ -22,6 +22,7 @@ from config import SecureConfig
 from user_auth import UserAuthManager
 from pdf_utils_v2 import PDFSecureManager
 from ip_check import IPChecker
+from api_manager import get_api_manager
 
 class PDFSecureCLI:
     def __init__(self):
@@ -67,8 +68,9 @@ class PDFSecureCLI:
         print("5. 🌐 Gestionar IPs autorizadas")
         print("6. 📊 Ver logs de acceso")
         print("7. 🧹 Mantenimiento")
-        print("8. ❓ Ayuda")
-        print("9. 🚪 Salir")
+        print("8. 🔍 Gestionar API de Usuarios")
+        print("9. ❓ Ayuda")
+        print("0. 🚪 Salir")
         print("-" * 30)
     
     def encrypt_pdf_interactive(self):
@@ -561,6 +563,84 @@ class PDFSecureCLI:
         print(f"🔑 Claves usuarios: {self.config.user_keys_file}")
         print(f"📊 Logs acceso: {self.config.access_log_file}")
     
+    def manage_api(self):
+        """Gestión de la API de Usuarios"""
+        api_manager = get_api_manager()
+
+        while True:
+            print("\n🔍 GESTIÓN DE API DE USUARIOS")
+            print("-" * 40)
+
+            # Mostrar estado actual
+            status = api_manager.get_status()
+            if status['running']:
+                print(f"📡 Estado: ✅ EJECUTÁNDOSE")
+                print(f"🌐 URL: {status['url']}")
+                if status.get('healthy'):
+                    print(f"❤️  Salud: ✅ Saludable")
+                    if 'version' in status:
+                        print(f"📦 Versión: {status['version']}")
+            else:
+                print(f"📡 Estado: ⭕ DETENIDA")
+
+            print("\n" + "-" * 40)
+            print("1. ▶️  Iniciar API")
+            print("2. ⏹️  Detener API")
+            print("3. 🔄 Ver estado")
+            print("4. 🌐 Abrir en navegador")
+            print("5. 👥 Listar usuarios del sistema")
+            print("6. 🔙 Volver al menú principal")
+
+            choice = input("\nSelecciona opción: ").strip()
+
+            if choice == "1":
+                print("\n▶️  Iniciando API...")
+                success, message = api_manager.start(in_thread=True)
+                if success:
+                    print(f"✅ {message}")
+                    print(f"💡 Accede a la API en: {api_manager.base_url}")
+                else:
+                    print(f"❌ {message}")
+
+            elif choice == "2":
+                print("\n⏹️  Deteniendo API...")
+                success, message = api_manager.stop()
+                if success:
+                    print(f"✅ {message}")
+                else:
+                    print(f"❌ {message}")
+
+            elif choice == "3":
+                print("\n🔄 Actualizando estado...")
+                # El estado ya se muestra al principio del bucle
+
+            elif choice == "4":
+                print("\n🌐 Abriendo navegador...")
+                success, message = api_manager.open_browser()
+                if success:
+                    print(f"✅ {message}")
+                else:
+                    print(f"❌ {message}")
+
+            elif choice == "5":
+                print("\n👥 USUARIOS DEL SISTEMA")
+                print("-" * 40)
+                users_data = api_manager.get_users(format_type='simple')
+
+                if users_data and users_data.get('success'):
+                    users = users_data.get('users', [])
+                    print(f"Total de usuarios: {len(users)}\n")
+                    for i, user in enumerate(users, 1):
+                        print(f"  {i}. {user}")
+                else:
+                    print("❌ No se pudo obtener la lista de usuarios")
+                    print("💡 Asegúrate de que la API esté ejecutándose")
+
+            elif choice == "6":
+                break
+            else:
+                print("❌ Opción no válida")
+
     def show_help(self):
         """Muestra ayuda"""
         print("\n❓ AYUDA")
@@ -625,8 +705,10 @@ class PDFSecureCLI:
                 elif choice == "7":
                     self.show_maintenance_menu()
                 elif choice == "8":
-                    self.show_help()
+                    self.manage_api()
                 elif choice == "9":
+                    self.show_help()
+                elif choice == "0":
                     print("\n👋 ¡Hasta luego!")
                     break
                 else:
