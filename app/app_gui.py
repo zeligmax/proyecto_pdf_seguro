@@ -563,11 +563,21 @@ class PDFSecureGUI:
         ttk.Label(header, text="(Solo lectura - No guardado en disco)", foreground='blue').pack(side=tk.LEFT, padx=(10, 0))
 
         # Intentar convertir PDF a imágenes
+        viewer_success = False
+        error_message = None
+
+        # Debug: mostrar qué Python se está usando
+        import sys
+        print(f"DEBUG: Python executable: {sys.executable}")
+        print(f"DEBUG: Python version: {sys.version}")
+
         try:
             import fitz  # PyMuPDF
+            print(f"DEBUG: PyMuPDF imported successfully, version: {fitz.version}")
 
             # Abrir PDF desde bytes
             pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+            print(f"DEBUG: PDF opened, {len(pdf_document)} pages")
 
             # Frame con scroll para las páginas
             canvas = tk.Canvas(main_frame)
@@ -617,8 +627,20 @@ class PDFSecureGUI:
             canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        except ImportError:
-            # Si PyMuPDF no está disponible, mostrar mensaje
+            viewer_success = True
+            print("DEBUG: PDF viewer loaded successfully!")
+
+        except ImportError as e:
+            error_message = f"ImportError: {e}"
+            print(f"DEBUG: {error_message}")
+        except Exception as e:
+            error_message = f"{type(e).__name__}: {e}"
+            print(f"DEBUG: Other exception: {error_message}")
+            import traceback
+            traceback.print_exc()
+
+        # Si hubo error, mostrar mensaje de fallback
+        if not viewer_success:
             error_frame = ttk.Frame(main_frame)
             error_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -628,9 +650,12 @@ class PDFSecureGUI:
             code_frame = ttk.Frame(error_frame)
             code_frame.pack(pady=10)
             code_text = tk.Text(code_frame, height=2, width=50, bg='#f0f0f0')
-            code_text.insert('1.0', 'pip install PyMuPDF')
+            code_text.insert('1.0', 'pip install PyMuPDF Pillow')
             code_text.config(state='disabled')
             code_text.pack()
+
+            if error_message:
+                ttk.Label(error_frame, text=f"Error: {error_message}", foreground='red', font=('Arial', 9)).pack(pady=5)
 
             ttk.Label(error_frame, text=f"Tamaño del PDF: {len(pdf_bytes):,} bytes", foreground='gray').pack(pady=20)
             ttk.Label(error_frame, text="El archivo ha sido descifrado en memoria correctamente.", foreground='green').pack()

@@ -5,9 +5,9 @@ flask-cors>=4.0.0
 PyMuPDF>=1.23.0
 Pillow>=10.0.0
 pathlib
-tkinter; platform_system == "Windows"
-pyinstaller; sys_platform == "win32"
-pywin32; sys_platform == "win32"
+# tkinter - comes pre-installed with Python, not available on PyPI
+# pyinstaller - optional, only needed to compile to .exe
+# pywin32 - Windows-specific, install manually if needed: pip install pywin32
 
 #Notes:
 
