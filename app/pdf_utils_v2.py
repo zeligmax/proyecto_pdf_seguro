@@ -25,7 +25,7 @@ class PDFSecureManager:
     def __init__(self, config, auth_manager):
         """
         Inicializa el gestor de PDFs seguros
-        
+
         Args:
             config: Instancia de SecureConfig
             auth_manager: Instancia de UserAuthManager
@@ -33,7 +33,33 @@ class PDFSecureManager:
         self.config = config
         self.auth_manager = auth_manager
         self.master_fernet = Fernet(config.get_master_key())
-    
+
+    def _decrypt_metadata(self, secure_data):
+        """
+        Descifra metadatos del archivo cifrado con compatibilidad hacia atrás
+
+        Args:
+            secure_data: Diccionario con datos del archivo cifrado
+
+        Returns:
+            dict: Metadatos descifrados
+        """
+        # Detectar versión del archivo
+        version = secure_data.get('version', '2.0')
+
+        if version >= '2.1':
+            # Versión 2.1+: metadatos cifrados
+            try:
+                encrypted_metadata = bytes.fromhex(secure_data['encrypted_metadata'])
+                decrypted_metadata_bytes = self.master_fernet.decrypt(encrypted_metadata)
+                metadata = json.loads(decrypted_metadata_bytes.decode('utf-8'))
+                return metadata
+            except Exception as e:
+                raise ValueError(f"Error al descifrar metadatos: {str(e)}")
+        else:
+            # Versión 2.0: metadatos en texto plano (compatibilidad)
+            return secure_data.get('metadata', {})
+
     def encrypt_pdf_with_user_keys(self, pdf_path, output_path, authorized_users):
         """
         Cifra PDF con claves únicas por usuario
@@ -76,34 +102,41 @@ class PDFSecureManager:
         
         # 4. Cifrar la clave del PDF con la clave maestra
         encrypted_pdf_key = self.master_fernet.encrypt(pdf_key)
-        
-        # 5. Crear estructura del archivo cifrado
+
+        # 5. Crear metadatos (NUEVO: se cifrarán para mayor seguridad)
+        metadata = {
+            'original_filename': Path(pdf_path).name,
+            'original_size': len(pdf_data),
+            'encrypted_on': datetime.now().isoformat(),
+            'authorized_users': authorized_users,
+            'encryption_method': 'Fernet/AES256'
+        }
+
+        # 6. Cifrar metadatos con la clave maestra (NUEVO: Mejora de Seguridad #3)
+        metadata_json = json.dumps(metadata)
+        encrypted_metadata = self.master_fernet.encrypt(metadata_json.encode('utf-8'))
+
+        # 7. Crear estructura del archivo cifrado
         secure_data = {
+            'version': '2.1',  # Versión actualizada con metadatos cifrados
             'encrypted_pdf': encrypted_pdf.hex(),
             'encrypted_pdf_key': encrypted_pdf_key.hex(),
             'user_keys': user_key_entries,
-            'metadata': {
-                'original_filename': Path(pdf_path).name,
-                'original_size': len(pdf_data),
-                'encrypted_on': datetime.now().isoformat(),
-                'authorized_users': authorized_users,
-                'encryption_method': 'Fernet/AES256',
-                'version': '2.0'
-            }
+            'encrypted_metadata': encrypted_metadata.hex()  # Metadatos cifrados
         }
-        
-        # 6. Guardar archivo cifrado
+
+        # 8. Guardar archivo cifrado
         with open(output_path, 'w') as f:
             json.dump(secure_data, f, indent=2)
-        
-        # 7. Guardar claves de usuario
+
+        # 9. Guardar claves de usuario
         existing_keys = self.auth_manager.load_user_keys()
         existing_keys.update(user_keys)
         self.auth_manager.save_user_keys(existing_keys)
-        
-        # 8. Log de cifrado
+
+        # 10. Log de cifrado
         self._log_encryption(authorized_users, pdf_path, output_path)
-        
+
         return user_key_entries
     
     def decrypt_pdf_with_user_key(self, encrypted_path, user_key, output_path=None):
@@ -195,26 +228,29 @@ class PDFSecureManager:
             self._log_access(authorized_username, encrypted_path, "PDF_DECRYPTION_FAILED")
             raise ValueError(f"Error al descifrar el PDF: {str(e)}")
         
-        # 7. Determinar ruta de salida
+        # 7. Descifrar metadatos (NUEVO: soporta metadatos cifrados en v2.1+)
+        metadata = self._decrypt_metadata(secure_data)
+
+        # 8. Determinar ruta de salida
         if not output_path:
-            original_name = secure_data['metadata']['original_filename']
+            original_name = metadata['original_filename']
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             output_path = Path(encrypted_path).parent / f"decrypted_{timestamp}_{original_name}"
-        
-        # 8. Guardar PDF descifrado
+
+        # 9. Guardar PDF descifrado
         try:
             with open(output_path, 'wb') as f:
                 f.write(decrypted_pdf)
         except Exception as e:
             raise ValueError(f"Error al guardar archivo: {str(e)}")
-        
-        # 9. Log del acceso exitoso
+
+        # 10. Log del acceso exitoso
         self._log_access(authorized_username, encrypted_path, "SUCCESS")
-        
-        # 10. Actualizar contador de acceso IP
+
+        # 11. Actualizar contador de acceso IP
         if whitelist:
             self.config.increment_ip_access_count(local_ip)
-        
+
         return str(output_path)
     
     def get_file_info(self, encrypted_path):
@@ -235,8 +271,9 @@ class PDFSecureManager:
                 secure_data = json.load(f)
         except json.JSONDecodeError:
             raise ValueError("El archivo no es un PDF cifrado válido")
-        
-        metadata = secure_data.get('metadata', {})
+
+        # Descifrar metadatos (soporta v2.1+ con metadatos cifrados)
+        metadata = self._decrypt_metadata(secure_data)
         user_keys = secure_data.get('user_keys', {})
         
         # Obtener información de las claves de usuario
