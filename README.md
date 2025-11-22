@@ -49,6 +49,7 @@ PDF Secure es un programa que te permite **proteger tus archivos PDF** para que 
 
 - 🔐 **Cifrado AES-256**: Nivel militar de seguridad (v2.1 con metadatos cifrados)
 - 👥 **Claves por Usuario**: Cada persona tiene su propia clave única
+- 🔑 **Verificación de Usuario del Sistema**: Valida que el usuario logueado coincida con el autorizado
 - 🌐 **Control de IP Local**: Whitelist opcional de dispositivos autorizados
 - 📊 **Auditoría Completa**: Registro detallado de todos los accesos
 - ⏰ **Expiración Automática**: Las claves caducan después de 30 días (configurable)
@@ -455,6 +456,8 @@ Esta opción te permite ver el PDF sin crear ningún archivo en disco (máxima s
 
 2. **Ve a la pestaña "🔓 Descifrar PDF"**
 
+   ℹ️ **Nota**: Verás tu usuario actual del sistema (ej: "👤 Usuario del sistema: María"). Solo podrás descifrar archivos autorizados para ese usuario.
+
 3. **Selecciona el archivo cifrado:**
    - Click en "Examinar"
    - Busca `contrato_secreto.enc`
@@ -473,6 +476,11 @@ Esta opción te permite ver el PDF sin crear ningún archivo en disco (máxima s
    - ✅ El PDF NO se guarda en disco
    - ✅ Es solo lectura (no se puede editar)
    - ✅ Mayor seguridad: no deja rastros en disco
+
+**⚠️ Importante**: El sistema verifica que:
+- La clave sea correcta
+- El usuario del sistema coincida con el usuario autorizado para esa clave
+- La IP esté autorizada (si hay whitelist activa)
 
 #### **Opción B: Descifrar y guardar en disco (Tradicional)**
 
@@ -635,6 +643,36 @@ Verás información como:
 
 ---
 
+### **¿Qué significa "Usuario del sistema no coincide"?**
+
+**Explicación**: PDF Secure v2.1 implementa una capa adicional de seguridad que verifica que el usuario logueado en el sistema operativo coincida con el usuario autorizado para la clave.
+
+**Ejemplo del error:**
+```
+Usuario del sistema no coincide.
+Usuario actual del sistema: Juan
+Usuario autorizado para esta clave: María
+Debes estar logueado como 'María' para descifrar este archivo.
+```
+
+**¿Por qué pasa esto?**
+
+Cada clave está vinculada a un usuario específico. Cuando María cifró el PDF y autorizó a "María" como usuario, el sistema ahora verifica que quien intenta descifrar esté realmente logueado como "María" en el sistema operativo.
+
+**Solución:**
+
+1. **Opción A (Recomendada)**: Cierra sesión e inicia sesión con el usuario correcto
+   - Windows: Cambiar de usuario o reiniciar sesión
+   - Linux/macOS: `su - usuario_correcto` o cambiar de sesión
+
+2. **Opción B**: Pide al administrador que genere una nueva clave para tu usuario actual
+
+**Seguridad mejorada:**
+
+Esta verificación previene que alguien que robó una clave pueda usarla desde otra cuenta de usuario, añadiendo una capa extra de protección.
+
+---
+
 ## 🐛 **Solución de Problemas**
 
 ### **Problema: "PDF_SECURE_MASTER_KEY no encontrada"**
@@ -754,6 +792,45 @@ Luego reinicia la aplicación y vuelve a intentar.
 
 ---
 
+### **Problema: "Usuario del sistema no coincide"**
+
+**Error completo:**
+```
+Usuario del sistema no coincide.
+Usuario actual del sistema: User
+Usuario autorizado para esta clave: Juan
+Debes estar logueado como 'Juan' para descifrar este archivo.
+```
+
+**Causa**: Estás intentando descifrar con una clave que pertenece a otro usuario.
+
+**Solución**:
+
+**Opción 1 - Cambiar de usuario (Windows):**
+```
+1. Win + L (Bloquear sesión)
+2. Click en "Cambiar de usuario"
+3. Inicia sesión con el usuario correcto
+4. Vuelve a intentar descifrar
+```
+
+**Opción 2 - Cambiar de usuario (Linux/macOS):**
+```bash
+# Cambiar a otro usuario
+su - nombre_usuario
+
+# O iniciar nueva sesión de terminal
+sudo -u nombre_usuario -i
+```
+
+**Opción 3 - Generar nueva clave:**
+
+Si no puedes cambiar de usuario, pide al administrador que cifre nuevamente el archivo incluyendo tu usuario actual en la lista de autorizados.
+
+**Nota de seguridad**: Esta verificación es intencional para prevenir que claves robadas sean usadas desde otras cuentas.
+
+---
+
 ## 🔒 **Seguridad y Buenas Prácticas**
 
 ### **✅ Recomendaciones de Seguridad**
@@ -763,25 +840,33 @@ Luego reinicia la aplicación y vuelve a intentar.
    - ✅ Nunca compartas claves por email o chat
    - ✅ Cambia claves periódicamente (cada 30-60 días)
    - ❌ No escribas claves en papeles o archivos de texto sin cifrar
+   - ⚠️ **Cada clave está vinculada a un usuario específico del sistema**
 
-2. **Visualización de PDFs** (NUEVO):
+2. **Verificación de Usuario del Sistema** (NUEVO en v2.1):
+   - ✅ El sistema verifica que el usuario logueado coincida con el usuario autorizado
+   - ✅ **No basta con tener la clave**: debes estar logueado como el usuario correcto
+   - ✅ Esto previene que claves robadas sean usadas desde otras cuentas
+   - ⚠️ Si cambias de computadora, asegúrate de usar el mismo nombre de usuario
+
+3. **Visualización de PDFs**:
    - ✅ **Usa "Ver PDF" en lugar de "Descifrar y Guardar"** cuando solo necesites consultar el documento
    - ✅ El visualizador en memoria NO deja rastros en disco
    - ✅ Mayor seguridad para información confidencial
    - ⚠️ Si descifras y guardas, elimina el archivo cuando termines
 
-3. **Backups**:
+4. **Backups**:
    - ✅ Haz backup regular de `~/.pdf_secure/`
    - ✅ Guarda tu clave maestra en un lugar seguro
    - ✅ Documenta qué usuarios tienen acceso a qué archivos
 
-4. **Monitoreo**:
+5. **Monitoreo**:
    - ✅ Revisa los logs semanalmente
    - ✅ Investiga intentos de acceso fallidos
    - ✅ Diferencia entre VIEW_ATTEMPT y DECRYPT_ATTEMPT en los logs
+   - ✅ Monitorea intentos con estado USER_MISMATCH (posibles claves robadas)
    - ✅ Limpia claves expiradas regularmente
 
-5. **Control de Acceso**:
+6. **Control de Acceso**:
    - ✅ Usa whitelist de IPs cuando sea posible
    - ✅ Revoca acceso inmediatamente cuando sea necesario
    - ✅ Usa descripciones claras para cada IP autorizada
@@ -795,6 +880,28 @@ Luego reinicia la aplicación y vuelve a intentar.
 2. **Dependencia de clave maestra**: Si pierdes la clave maestra, pierdes acceso a TODOS los archivos cifrados.
 
 3. **IP local únicamente**: El control de IP solo funciona en red local, no identifica dispositivos específicos de forma única.
+
+4. **Verificación de usuario basada en nombre**: La verificación de usuario del sistema compara nombres de usuario (Windows, Linux, macOS). Si dos computadoras tienen el mismo nombre de usuario, ambas podrán descifrar (siempre que tengan la clave correcta).
+
+---
+
+### **🔐 Autenticación de Dos Factores**
+
+**PDF Secure v2.1 implementa autenticación de dos factores:**
+
+1. **Factor 1 - Lo que sabes**: La clave de usuario (64 caracteres hexadecimales)
+2. **Factor 2 - Quién eres**: Tu nombre de usuario en el sistema operativo
+
+**Ventajas:**
+- ✅ Una clave robada no es suficiente para descifrar
+- ✅ El atacante también necesitaría acceso a la cuenta del usuario
+- ✅ Los logs registran intentos con usuario incorrecto (USER_MISMATCH)
+
+**Ejemplo práctico:**
+
+Si María tiene la clave `abc123...` pero Juan roba esa clave:
+- Juan intenta descifrar desde su cuenta → ❌ DENEGADO (usuario no coincide)
+- María descifra desde su cuenta → ✅ PERMITIDO (clave + usuario correcto)
 
 ---
 
@@ -837,7 +944,8 @@ Este proyecto está licenciado bajo la Licencia MIT. Ver archivo [LICENSE](LICEN
 **Novedades v2.1**:
 - Visualizador de PDF en memoria (sin guardar en disco)
 - Metadatos cifrados para mayor seguridad
-- Logs diferenciados (VIEW_ATTEMPT vs DECRYPT_ATTEMPT)  
+- Logs diferenciados (VIEW_ATTEMPT vs DECRYPT_ATTEMPT)
+- Verificación de usuario del sistema (clave + usuario logueado)  
 
 ---
 

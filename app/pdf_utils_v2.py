@@ -12,6 +12,7 @@ Este módulo maneja el cifrado y descifrado de PDFs con:
 import os
 import json
 import socket
+import getpass
 from pathlib import Path
 from cryptography.fernet import Fernet
 from datetime import datetime
@@ -167,27 +168,38 @@ class PDFSecureManager:
         except Exception as e:
             raise ValueError(f"Error al cargar archivo: {str(e)}")
         
-        # 2. Verificar que la clave de usuario está autorizada
+        # 2. Verificar que la clave de usuario está autorizada Y que el usuario del sistema coincide
         user_authorized = False
         authorized_username = None
-        
+        current_system_user = self._get_current_system_user()
+
         user_keys_in_file = secure_data.get('user_keys', {})
-        
+
         for username, stored_key in user_keys_in_file.items():
             # Limpiar también la clave almacenada
             stored_key_clean = stored_key.strip()
-            
+
             if stored_key_clean == user_key:
                 user_authorized = True
                 authorized_username = username
                 break
-        
+
         if not user_authorized:
             # Mensaje de error más informativo
             error_msg = f"Clave de usuario no autorizada para este archivo.\n"
             error_msg += f"Usuarios autorizados: {', '.join(user_keys_in_file.keys())}"
-            
+
             self._log_access(None, encrypted_path, "UNAUTHORIZED_KEY")
+            raise ValueError(error_msg)
+
+        # 2.5. Verificar que el usuario del sistema coincide con el usuario autorizado
+        if current_system_user.lower() != authorized_username.lower():
+            error_msg = f"Usuario del sistema no coincide.\n"
+            error_msg += f"Usuario actual del sistema: {current_system_user}\n"
+            error_msg += f"Usuario autorizado para esta clave: {authorized_username}\n"
+            error_msg += f"Debes estar logueado como '{authorized_username}' para descifrar este archivo."
+
+            self._log_access(current_system_user, encrypted_path, "USER_MISMATCH")
             raise ValueError(error_msg)
         
         # 3. Verificar IP local si está habilitada la whitelist
@@ -280,9 +292,10 @@ class PDFSecureManager:
         except Exception as e:
             raise ValueError(f"Error al cargar archivo: {str(e)}")
 
-        # 2. Verificar que la clave de usuario está autorizada
+        # 2. Verificar que la clave de usuario está autorizada Y que el usuario del sistema coincide
         user_authorized = False
         authorized_username = None
+        current_system_user = self._get_current_system_user()
 
         user_keys_in_file = secure_data.get('user_keys', {})
 
@@ -301,6 +314,16 @@ class PDFSecureManager:
             error_msg += f"Usuarios autorizados: {', '.join(user_keys_in_file.keys())}"
 
             self._log_view(None, encrypted_path, "UNAUTHORIZED_KEY")
+            raise ValueError(error_msg)
+
+        # 2.5. Verificar que el usuario del sistema coincide con el usuario autorizado
+        if current_system_user.lower() != authorized_username.lower():
+            error_msg = f"Usuario del sistema no coincide.\n"
+            error_msg += f"Usuario actual del sistema: {current_system_user}\n"
+            error_msg += f"Usuario autorizado para esta clave: {authorized_username}\n"
+            error_msg += f"Debes estar logueado como '{authorized_username}' para descifrar este archivo."
+
+            self._log_view(current_system_user, encrypted_path, "USER_MISMATCH")
             raise ValueError(error_msg)
 
         # 3. Verificar IP local si está habilitada la whitelist
@@ -463,7 +486,17 @@ class PDFSecureManager:
             return local_ip
         except:
             return "127.0.0.1"
-    
+
+    def _get_current_system_user(self):
+        """Obtiene el nombre de usuario actual del sistema"""
+        try:
+            return getpass.getuser()
+        except Exception:
+            try:
+                return os.getlogin()
+            except Exception:
+                return "Unknown"
+
     def get_access_logs(self, limit=100):
         """
         Obtiene los últimos logs de acceso

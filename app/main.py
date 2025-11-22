@@ -127,7 +127,22 @@ class PDFSecureCLI:
         """Proceso interactivo de descifrado de PDF"""
         print("\n🔓 DESCIFRAR PDF")
         print("-" * 30)
-        
+
+        # Mostrar usuario actual del sistema
+        import getpass
+        try:
+            current_user = getpass.getuser()
+        except:
+            import os
+            try:
+                current_user = os.getlogin()
+            except:
+                current_user = "Unknown"
+
+        print(f"\n👤 Usuario del sistema: {current_user}")
+        print("ℹ️  Solo podrás descifrar archivos autorizados para este usuario")
+        print()
+
         # Solicitar archivo cifrado
         encrypted_path = input("🔒 Ruta del archivo cifrado (.enc): ").strip()
         if not encrypted_path:

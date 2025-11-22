@@ -170,8 +170,26 @@ class PDFSecureGUI:
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        ttk.Label(main, text="🔓 Descifrar PDF", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
-        
+        ttk.Label(main, text="🔓 Descifrar PDF", font=('Arial', 14, 'bold')).pack(pady=(0, 10))
+
+        # Mostrar usuario actual del sistema
+        import getpass
+        try:
+            current_user = getpass.getuser()
+        except:
+            import os
+            try:
+                current_user = os.getlogin()
+            except:
+                current_user = "Unknown"
+
+        user_info_frame = ttk.Frame(main)
+        user_info_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(user_info_frame, text=f"👤 Usuario del sistema: {current_user}",
+                 foreground='blue', font=('Arial', 10)).pack(anchor=tk.W)
+        ttk.Label(user_info_frame, text="ℹ️ Solo podrás descifrar archivos autorizados para este usuario",
+                 foreground='gray', font=('Arial', 9)).pack(anchor=tk.W)
+
         # Cifrado
         enc_frame = ttk.LabelFrame(main, text="🔒 Archivo Cifrado", padding=10)
         enc_frame.pack(fill=tk.X, pady=(0, 10))
