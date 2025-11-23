@@ -568,7 +568,7 @@ pdf_data = zlib.decompress(decrypted_compressed)
 ### v2.1 - 20/Nov/2025 15:00
 - ✅ **Implementado:** Cifrado de metadatos con AES-256
 - ✅ **Añadido:** Compatibilidad hacia atrás con v2.0
-- ✅ **Añadido:** Método `_decrypt_metadata()` en PDFSecureManager
+- ✅ **Añadido:** Método `_decrypt_metadata()` en FileSecureManager
 - ✅ **Actualizado:** Nivel de seguridad de 8.5/10 a 9.0/10
 - ✅ **Añadido:** Script de pruebas `test_encrypted_metadata.py`
 

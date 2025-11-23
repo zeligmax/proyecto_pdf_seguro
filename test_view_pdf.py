@@ -18,7 +18,7 @@ sys.path.append(str(Path(__file__).parent / "app"))
 
 from config import SecureConfig
 from user_auth import UserAuthManager
-from pdf_utils_v2 import PDFSecureManager
+from pdf_utils_v2 import FileSecureManager
 
 def test_view_memory():
     print("=" * 60)
@@ -30,7 +30,7 @@ def test_view_memory():
     try:
         config = SecureConfig()
         auth_manager = UserAuthManager(config)
-        pdf_manager = PDFSecureManager(config, auth_manager)
+        pdf_manager = FileSecureManager(config, auth_manager)
         print("   ✅ Sistema inicializado")
     except Exception as e:
         print(f"   ❌ Error: {e}")

@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'app'))
 
 from config import SecureConfig
 from user_auth import UserAuthManager
-from pdf_utils_v2 import PDFSecureManager
+from pdf_utils_v2 import FileSecureManager
 
 
 def test_encrypted_metadata():
@@ -33,7 +33,7 @@ def test_encrypted_metadata():
         print("\n1. Inicializando sistema...")
         config = SecureConfig()
         auth_manager = UserAuthManager(config)
-        pdf_manager = PDFSecureManager(config, auth_manager)
+        pdf_manager = FileSecureManager(config, auth_manager)
         print("   ✅ Sistema inicializado")
 
         # Crear PDF de prueba simple

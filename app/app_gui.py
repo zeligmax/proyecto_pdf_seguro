@@ -26,7 +26,7 @@ sys.path.append(str(Path(__file__).parent))
 
 from config import SecureConfig
 from user_auth import UserAuthManager
-from pdf_utils_v2 import PDFSecureManager
+from pdf_utils_v2 import FileSecureManager
 from ip_check import IPChecker
 from api_manager import get_api_manager
 
@@ -34,7 +34,7 @@ class PDFSecureGUI:
     def __init__(self):
         # Crear ventana PRIMERO
         self.root = tk.Tk()
-        self.root.title("PDF Secure v2.0")
+        self.root.title("PDF Secure v2.2 - Multi-formato")
         self.root.geometry("900x700")
         self.root.minsize(800, 600)
         
@@ -62,7 +62,7 @@ class PDFSecureGUI:
         try:
             self.config = SecureConfig()
             self.auth_manager = UserAuthManager(self.config)
-            self.pdf_manager = PDFSecureManager(self.config, self.auth_manager)
+            self.pdf_manager = FileSecureManager(self.config, self.auth_manager)
             self.ip_checker = IPChecker(self.config)
             self.api_manager = get_api_manager()
 
@@ -126,15 +126,17 @@ class PDFSecureGUI:
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        ttk.Label(main, text="🔒 Cifrar PDF", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
-        
-        # PDF
-        pdf_frame = ttk.LabelFrame(main, text="📄 Archivo PDF", padding=10)
+        ttk.Label(main, text="🔒 Cifrar Archivo", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
+        # Archivo a cifrar
+        pdf_frame = ttk.LabelFrame(main, text="📄 Archivo a cifrar", padding=10)
         pdf_frame.pack(fill=tk.X, pady=(0, 10))
         pdf_entry = ttk.Frame(pdf_frame)
         pdf_entry.pack(fill=tk.X)
         ttk.Entry(pdf_entry, textvariable=self.pdf_path_var).pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Button(pdf_entry, text="Examinar", command=self.browse_pdf).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Label(pdf_frame, text="ℹ️ Formatos soportados: PDF, DOCX, XLSX, TXT, PBIP, PBIX",
+                 foreground='gray', font=('Arial', 9)).pack(anchor=tk.W, pady=(5, 0))
         
         # Salida
         out_frame = ttk.LabelFrame(main, text="💾 Salida", padding=10)
@@ -170,7 +172,7 @@ class PDFSecureGUI:
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        ttk.Label(main, text="🔓 Descifrar PDF", font=('Arial', 14, 'bold')).pack(pady=(0, 10))
+        ttk.Label(main, text="🔓 Descifrar Archivo", font=('Arial', 14, 'bold')).pack(pady=(0, 10))
 
         # Mostrar usuario actual del sistema
         import getpass
@@ -210,7 +212,7 @@ class PDFSecureGUI:
         # Botones
         btn_frame = ttk.Frame(main)
         btn_frame.pack(fill=tk.X, pady=20)
-        ttk.Button(btn_frame, text="👁️ Ver PDF", command=self.view_pdf, width=15).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text="👁️ Ver Archivo", command=self.view_pdf, width=15).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(btn_frame, text="🔓 Descifrar y Guardar", command=self.decrypt_pdf, width=20).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(btn_frame, text="🧹 Limpiar", command=self.clear_decrypt).pack(side=tk.LEFT)
 
@@ -427,7 +429,18 @@ class PDFSecureGUI:
 
     # Métodos de archivos
     def browse_pdf(self):
-        f = filedialog.askopenfilename(filetypes=[("PDF", "*.pdf")])
+        f = filedialog.askopenfilename(
+            title="Seleccionar Archivo",
+            filetypes=[
+                ("Archivos soportados", "*.pdf *.docx *.xlsx *.txt *.pbip *.pbix"),
+                ("PDF", "*.pdf"),
+                ("Word", "*.docx"),
+                ("Excel", "*.xlsx"),
+                ("Texto", "*.txt"),
+                ("Power BI", "*.pbip *.pbix"),
+                ("Todos", "*.*")
+            ]
+        )
         if f:
             self.pdf_path_var.set(f)
             self.output_path_var.set(str(Path(f).with_suffix('.enc')))
@@ -457,7 +470,7 @@ class PDFSecureGUI:
             return
         
         if not Path(pdf).exists():
-            messagebox.showerror("Error", "PDF no existe")
+            messagebox.showerror("Error", "Archivo no existe")
             return
         
         users_list = [u.strip() for u in users.split(',') if u.strip()]
@@ -550,10 +563,10 @@ class PDFSecureGUI:
         def worker():
             try:
                 self.status_label.config(text="Descifrando en memoria...")
-                pdf_bytes, original_filename = self.pdf_manager.decrypt_pdf_to_memory(enc, key)
+                file_bytes, original_filename, file_type = self.pdf_manager.decrypt_pdf_to_memory(enc, key)
 
-                # Abrir ventana de visualización en el thread principal
-                self.root.after(0, lambda: self.show_pdf_viewer(pdf_bytes, original_filename))
+                # Abrir ventana de visualización según el tipo de archivo
+                self.root.after(0, lambda: self.show_file_viewer(file_bytes, original_filename, file_type))
                 self.root.after(0, lambda: self.decrypt_status.config(text=f"✅ Visualizando: {original_filename}", foreground='green'))
                 self.root.after(0, lambda: self.status_label.config(text="Completado"))
             except Exception as e:
@@ -562,6 +575,23 @@ class PDFSecureGUI:
                 self.root.after(0, lambda: self.status_label.config(text="Error"))
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def show_file_viewer(self, file_bytes, filename, file_type):
+        """Muestra ventana con visualizador según el tipo de archivo"""
+        # Detectar tipo de archivo y mostrar visualizador apropiado
+        file_type_lower = file_type.lower()
+
+        if file_type_lower == '.pdf':
+            self.show_pdf_viewer(file_bytes, filename)
+        elif file_type_lower in ['.txt', '.md', '.log', '.csv']:
+            self.show_text_viewer(file_bytes, filename, file_type_lower)
+        elif file_type_lower in ['.docx', '.xlsx', '.pptx', '.pbip', '.pbix']:
+            self.show_office_info_viewer(file_bytes, filename, file_type_lower)
+        elif file_type_lower in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']:
+            self.show_image_viewer(file_bytes, filename)
+        else:
+            # Tipo de archivo no soportado para visualización
+            self.show_generic_file_info(file_bytes, filename, file_type_lower)
 
     def show_pdf_viewer(self, pdf_bytes, filename):
         """Muestra ventana con visualizador de PDF"""
@@ -680,6 +710,131 @@ class PDFSecureGUI:
             ttk.Label(error_frame, text="Usa el botón 'Descifrar y Guardar' si deseas guardarlo en disco.", wraplength=600).pack(pady=10)
 
         # Botón cerrar
+        ttk.Button(main_frame, text="Cerrar", command=viewer.destroy).pack(pady=(10, 0))
+
+    def show_text_viewer(self, file_bytes, filename, file_type):
+        """Muestra ventana con visualizador de texto"""
+        viewer = tk.Toplevel(self.root)
+        viewer.title(f"Visualizador de Texto - {filename} (Solo lectura)")
+        viewer.geometry("800x600")
+
+        main_frame = ttk.Frame(viewer)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Encabezado
+        header = ttk.Frame(main_frame)
+        header.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(header, text=f"📄 {filename}", font=('Arial', 12, 'bold')).pack(side=tk.LEFT)
+        ttk.Label(header, text="(Solo lectura - No guardado en disco)", foreground='blue').pack(side=tk.LEFT, padx=(10, 0))
+
+        # Área de texto con scroll
+        text_frame = ttk.Frame(main_frame)
+        text_frame.pack(fill=tk.BOTH, expand=True)
+
+        text_widget = scrolledtext.ScrolledText(text_frame, wrap=tk.WORD, font=('Consolas', 10))
+        text_widget.pack(fill=tk.BOTH, expand=True)
+
+        # Decodificar y mostrar texto
+        try:
+            text_content = file_bytes.decode('utf-8')
+            text_widget.insert('1.0', text_content)
+        except UnicodeDecodeError:
+            try:
+                text_content = file_bytes.decode('latin-1')
+                text_widget.insert('1.0', text_content)
+            except:
+                text_widget.insert('1.0', "[Error: No se pudo decodificar el archivo como texto]")
+
+        text_widget.config(state='disabled')  # Solo lectura
+
+        ttk.Button(main_frame, text="Cerrar", command=viewer.destroy).pack(pady=(10, 0))
+
+    def show_image_viewer(self, file_bytes, filename):
+        """Muestra ventana con visualizador de imágenes"""
+        viewer = tk.Toplevel(self.root)
+        viewer.title(f"Visualizador de Imagen - {filename} (Solo lectura)")
+        viewer.geometry("800x700")
+
+        main_frame = ttk.Frame(viewer)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Encabezado
+        header = ttk.Frame(main_frame)
+        header.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(header, text=f"🖼️ {filename}", font=('Arial', 12, 'bold')).pack(side=tk.LEFT)
+        ttk.Label(header, text="(Solo lectura - No guardado en disco)", foreground='blue').pack(side=tk.LEFT, padx=(10, 0))
+
+        try:
+            # Abrir imagen desde bytes
+            img = Image.open(io.BytesIO(file_bytes))
+
+            # Redimensionar si es muy grande
+            max_width, max_height = 750, 600
+            if img.width > max_width or img.height > max_height:
+                img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+
+            # Convertir a PhotoImage
+            photo = ImageTk.PhotoImage(img)
+
+            # Mostrar imagen
+            img_label = ttk.Label(main_frame, image=photo)
+            img_label.image = photo  # Mantener referencia
+            img_label.pack()
+
+            # Info
+            info_text = f"Dimensiones: {img.width}x{img.height} | Tamaño: {len(file_bytes):,} bytes"
+            ttk.Label(main_frame, text=info_text, foreground='gray').pack(pady=5)
+
+        except Exception as e:
+            ttk.Label(main_frame, text=f"Error al cargar imagen: {str(e)}", foreground='red').pack()
+
+        ttk.Button(main_frame, text="Cerrar", command=viewer.destroy).pack(pady=(10, 0))
+
+    def show_office_info_viewer(self, file_bytes, filename, file_type):
+        """Muestra información sobre archivos Office (no se pueden visualizar directamente)"""
+        viewer = tk.Toplevel(self.root)
+        viewer.title(f"Información del Archivo - {filename}")
+        viewer.geometry("600x400")
+
+        main_frame = ttk.Frame(viewer)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        ttk.Label(main_frame, text=f"📦 {filename}", font=('Arial', 14, 'bold')).pack(pady=20)
+
+        info_frame = ttk.Frame(main_frame)
+        info_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        ttk.Label(info_frame, text="✅ Archivo descifrado en memoria correctamente", foreground='green', font=('Arial', 11)).pack(pady=10)
+        ttk.Label(info_frame, text=f"Tipo: {file_type.upper()}", font=('Arial', 10)).pack(pady=5)
+        ttk.Label(info_frame, text=f"Tamaño: {len(file_bytes):,} bytes", font=('Arial', 10)).pack(pady=5)
+
+        ttk.Label(info_frame, text="\n⚠️ Visualización no disponible", foreground='orange', font=('Arial', 11, 'bold')).pack(pady=10)
+        ttk.Label(info_frame, text=f"Los archivos {file_type.upper()} no se pueden visualizar directamente.", wraplength=500).pack(pady=5)
+        ttk.Label(info_frame, text='Usa el botón "Descifrar y Guardar" para obtener el archivo\ny ábrelo con la aplicación apropiada.', wraplength=500).pack(pady=5)
+
+        ttk.Button(main_frame, text="Cerrar", command=viewer.destroy).pack(pady=(10, 0))
+
+    def show_generic_file_info(self, file_bytes, filename, file_type):
+        """Muestra información genérica sobre archivos no soportados"""
+        viewer = tk.Toplevel(self.root)
+        viewer.title(f"Información del Archivo - {filename}")
+        viewer.geometry("600x350")
+
+        main_frame = ttk.Frame(viewer)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        ttk.Label(main_frame, text=f"📄 {filename}", font=('Arial', 14, 'bold')).pack(pady=20)
+
+        info_frame = ttk.Frame(main_frame)
+        info_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        ttk.Label(info_frame, text="✅ Archivo descifrado en memoria correctamente", foreground='green', font=('Arial', 11)).pack(pady=10)
+        ttk.Label(info_frame, text=f"Tipo: {file_type}", font=('Arial', 10)).pack(pady=5)
+        ttk.Label(info_frame, text=f"Tamaño: {len(file_bytes):,} bytes", font=('Arial', 10)).pack(pady=5)
+
+        ttk.Label(info_frame, text="\nℹ️ El archivo no se guarda en disco", foreground='blue', font=('Arial', 10)).pack(pady=10)
+        ttk.Label(info_frame, text='Usa "Descifrar y Guardar" si necesitas el archivo en disco.', wraplength=500).pack(pady=5)
+
         ttk.Button(main_frame, text="Cerrar", command=viewer.destroy).pack(pady=(10, 0))
 
     # Usuarios

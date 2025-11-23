@@ -18,9 +18,10 @@ from cryptography.fernet import Fernet
 from datetime import datetime
 
 
-class PDFSecureManager:
+class FileSecureManager:
     """
-    Gestor de cifrado/descifrado de PDFs con autenticación por usuario
+    Gestor de cifrado/descifrado de archivos con autenticación por usuario
+    Soporta múltiples formatos: PDF, DOCX, XLSX, TXT, PBIP, PBIX
     """
     
     def __init__(self, config, auth_manager):
@@ -105,12 +106,15 @@ class PDFSecureManager:
         encrypted_pdf_key = self.master_fernet.encrypt(pdf_key)
 
         # 5. Crear metadatos (NUEVO: se cifrarán para mayor seguridad)
+        file_extension = Path(pdf_path).suffix.lower()  # .pdf, .docx, .xlsx, etc.
         metadata = {
             'original_filename': Path(pdf_path).name,
+            'file_type': file_extension,  # NUEVO: tipo de archivo original
             'original_size': len(pdf_data),
             'encrypted_on': datetime.now().isoformat(),
             'authorized_users': authorized_users,
-            'encryption_method': 'Fernet/AES256'
+            'encryption_method': 'Fernet/AES256',
+            'version': '2.2'  # Nueva versión con soporte multi-formato
         }
 
         # 6. Cifrar metadatos con la clave maestra (NUEVO: Mejora de Seguridad #3)
@@ -119,11 +123,14 @@ class PDFSecureManager:
 
         # 7. Crear estructura del archivo cifrado
         secure_data = {
-            'version': '2.1',  # Versión actualizada con metadatos cifrados
-            'encrypted_pdf': encrypted_pdf.hex(),
-            'encrypted_pdf_key': encrypted_pdf_key.hex(),
+            'version': '2.2',  # Versión actualizada con soporte multi-formato
+            'encrypted_file': encrypted_pdf.hex(),  # Ahora soporta cualquier archivo
+            'encrypted_file_key': encrypted_pdf_key.hex(),
             'user_keys': user_key_entries,
-            'encrypted_metadata': encrypted_metadata.hex()  # Metadatos cifrados
+            'encrypted_metadata': encrypted_metadata.hex(),  # Metadatos cifrados
+            # Mantener compatibilidad con v2.1
+            'encrypted_pdf': encrypted_pdf.hex(),
+            'encrypted_pdf_key': encrypted_pdf_key.hex()
         }
 
         # 8. Guardar archivo cifrado
@@ -223,22 +230,32 @@ class PDFSecureManager:
                 raise ValueError(f"Autenticación fallida: {message}")
             # Si es porque no está registrada en el sistema, continuar (ya validamos en el archivo)
         
-        # 5. Descifrar clave del PDF
+        # 5. Descifrar clave del archivo (compatible con v2.0, v2.1, v2.2)
         try:
-            encrypted_pdf_key = bytes.fromhex(secure_data['encrypted_pdf_key'])
-            pdf_key = self.master_fernet.decrypt(encrypted_pdf_key)
+            # Intentar con v2.2 primero (encrypted_file_key), sino v2.0/v2.1 (encrypted_pdf_key)
+            if 'encrypted_file_key' in secure_data:
+                encrypted_file_key = bytes.fromhex(secure_data['encrypted_file_key'])
+            else:
+                encrypted_file_key = bytes.fromhex(secure_data['encrypted_pdf_key'])
+
+            file_key = self.master_fernet.decrypt(encrypted_file_key)
         except Exception as e:
             self._log_access(authorized_username, encrypted_path, "DECRYPTION_FAILED")
-            raise ValueError(f"Error al descifrar la clave del PDF: {str(e)}")
-        
-        # 6. Descifrar PDF
+            raise ValueError(f"Error al descifrar la clave del archivo: {str(e)}")
+
+        # 6. Descifrar archivo (compatible con v2.0, v2.1, v2.2)
         try:
-            pdf_fernet = Fernet(pdf_key)
-            encrypted_pdf = bytes.fromhex(secure_data['encrypted_pdf'])
-            decrypted_pdf = pdf_fernet.decrypt(encrypted_pdf)
+            file_fernet = Fernet(file_key)
+            # Intentar con v2.2 primero (encrypted_file), sino v2.0/v2.1 (encrypted_pdf)
+            if 'encrypted_file' in secure_data:
+                encrypted_data = bytes.fromhex(secure_data['encrypted_file'])
+            else:
+                encrypted_data = bytes.fromhex(secure_data['encrypted_pdf'])
+
+            decrypted_file = file_fernet.decrypt(encrypted_data)
         except Exception as e:
-            self._log_access(authorized_username, encrypted_path, "PDF_DECRYPTION_FAILED")
-            raise ValueError(f"Error al descifrar el PDF: {str(e)}")
+            self._log_access(authorized_username, encrypted_path, "FILE_DECRYPTION_FAILED")
+            raise ValueError(f"Error al descifrar el archivo: {str(e)}")
         
         # 7. Descifrar metadatos (NUEVO: soporta metadatos cifrados en v2.1+)
         metadata = self._decrypt_metadata(secure_data)
@@ -249,10 +266,10 @@ class PDFSecureManager:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             output_path = Path(encrypted_path).parent / f"decrypted_{timestamp}_{original_name}"
 
-        # 9. Guardar PDF descifrado
+        # 9. Guardar archivo descifrado
         try:
             with open(output_path, 'wb') as f:
-                f.write(decrypted_pdf)
+                f.write(decrypted_file)
         except Exception as e:
             raise ValueError(f"Error al guardar archivo: {str(e)}")
 
@@ -342,22 +359,32 @@ class PDFSecureManager:
                 self._log_view(authorized_username, encrypted_path, "AUTH_FAILED")
                 raise ValueError(f"Autenticación fallida: {message}")
 
-        # 5. Descifrar clave del PDF
+        # 5. Descifrar clave del archivo (compatible con v2.0, v2.1, v2.2)
         try:
-            encrypted_pdf_key = bytes.fromhex(secure_data['encrypted_pdf_key'])
-            pdf_key = self.master_fernet.decrypt(encrypted_pdf_key)
+            # Intentar con v2.2 primero (encrypted_file_key), sino v2.0/v2.1 (encrypted_pdf_key)
+            if 'encrypted_file_key' in secure_data:
+                encrypted_file_key = bytes.fromhex(secure_data['encrypted_file_key'])
+            else:
+                encrypted_file_key = bytes.fromhex(secure_data['encrypted_pdf_key'])
+
+            file_key = self.master_fernet.decrypt(encrypted_file_key)
         except Exception as e:
             self._log_view(authorized_username, encrypted_path, "DECRYPTION_FAILED")
-            raise ValueError(f"Error al descifrar la clave del PDF: {str(e)}")
+            raise ValueError(f"Error al descifrar la clave del archivo: {str(e)}")
 
-        # 6. Descifrar PDF en memoria
+        # 6. Descifrar archivo en memoria (compatible con v2.0, v2.1, v2.2)
         try:
-            pdf_fernet = Fernet(pdf_key)
-            encrypted_pdf = bytes.fromhex(secure_data['encrypted_pdf'])
-            decrypted_pdf = pdf_fernet.decrypt(encrypted_pdf)
+            file_fernet = Fernet(file_key)
+            # Intentar con v2.2 primero (encrypted_file), sino v2.0/v2.1 (encrypted_pdf)
+            if 'encrypted_file' in secure_data:
+                encrypted_data = bytes.fromhex(secure_data['encrypted_file'])
+            else:
+                encrypted_data = bytes.fromhex(secure_data['encrypted_pdf'])
+
+            decrypted_file = file_fernet.decrypt(encrypted_data)
         except Exception as e:
-            self._log_view(authorized_username, encrypted_path, "PDF_DECRYPTION_FAILED")
-            raise ValueError(f"Error al descifrar el PDF: {str(e)}")
+            self._log_view(authorized_username, encrypted_path, "FILE_DECRYPTION_FAILED")
+            raise ValueError(f"Error al descifrar el archivo: {str(e)}")
 
         # 7. Descifrar metadatos
         metadata = self._decrypt_metadata(secure_data)
@@ -369,9 +396,10 @@ class PDFSecureManager:
         if whitelist:
             self.config.increment_ip_access_count(local_ip)
 
-        # 10. Retornar bytes del PDF y nombre original
-        original_filename = metadata.get('original_filename', 'documento.pdf')
-        return decrypted_pdf, original_filename
+        # 10. Retornar bytes del archivo y nombre original
+        original_filename = metadata.get('original_filename', 'documento')
+        file_type = metadata.get('file_type', '.dat')  # Tipo de archivo para visualizador
+        return decrypted_file, original_filename, file_type
 
     def get_file_info(self, encrypted_path):
         """

@@ -6,12 +6,12 @@ sys.path.append('app')
 
 from config import SecureConfig
 from user_auth import UserAuthManager
-from pdf_utils_v2 import PDFSecureManager
+from pdf_utils_v2 import FileSecureManager
 
 # Inicializar
 config = SecureConfig()
 auth = UserAuthManager(config)
-pdf_manager = PDFSecureManager(config, auth)
+pdf_manager = FileSecureManager(config, auth)
 
 # Descifrar en memoria
 encrypted_file = Path('Assets/TECH.enc')

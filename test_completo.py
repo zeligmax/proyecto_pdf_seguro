@@ -20,7 +20,7 @@ sys.path.append(str(Path(__file__).parent / 'app'))
 
 from config import SecureConfig
 from user_auth import UserAuthManager
-from pdf_utils_v2 import PDFSecureManager
+from pdf_utils_v2 import FileSecureManager
 
 
 def test_completo():
@@ -34,7 +34,7 @@ def test_completo():
         print("\n1️⃣ Inicializando sistema...")
         config = SecureConfig()
         auth_manager = UserAuthManager(config)
-        pdf_manager = PDFSecureManager(config, auth_manager)
+        pdf_manager = FileSecureManager(config, auth_manager)
         print("✅ Sistema inicializado")
 
         # Usar un PDF existente para las pruebas

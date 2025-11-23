@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-PDF Secure CLI - Version 2.0
-Interfaz de línea de comandos para el sistema de PDFs seguros con autenticación por usuario.
+PDF Secure CLI - Version 2.2
+Interfaz de línea de comandos para el sistema de cifrado de archivos seguros con autenticación por usuario.
+Soporta: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 """
 
 import os
@@ -20,7 +21,7 @@ sys.path.append(str(Path(__file__).parent))
 
 from config import SecureConfig
 from user_auth import UserAuthManager
-from pdf_utils_v2 import PDFSecureManager
+from pdf_utils_v2 import FileSecureManager
 from ip_check import IPChecker
 from api_manager import get_api_manager
 
@@ -29,7 +30,7 @@ class PDFSecureCLI:
         try:
             self.config = SecureConfig()
             self.auth_manager = UserAuthManager(self.config)
-            self.pdf_manager = PDFSecureManager(self.config, self.auth_manager)
+            self.pdf_manager = FileSecureManager(self.config, self.auth_manager)
             self.ip_checker = IPChecker(self.config)
         except ValueError as e:
             print(f"❌ Error de configuración: {e}")
@@ -40,7 +41,7 @@ class PDFSecureCLI:
     def show_banner(self):
         """Muestra el banner de la aplicación"""
         print("\n" + "="*60)
-        print("📄 PDF SECURE v2.0 - Sistema de PDFs Seguros")
+        print("📄 PDF SECURE v2.2 - Sistema de Cifrado de Archivos Seguros")
         print("🔐 Con autenticación por usuario y trazabilidad completa")
         print("="*60)
         
@@ -61,8 +62,8 @@ class PDFSecureCLI:
         """Muestra el menú principal"""
         print("🔧 MENÚ PRINCIPAL")
         print("-" * 30)
-        print("1. 🔒 Cifrar PDF")
-        print("2. 🔓 Descifrar PDF")
+        print("1. 🔒 Cifrar Archivo")
+        print("2. 🔓 Descifrar Archivo")
         print("3. 📋 Ver información de archivo")
         print("4. 👥 Gestionar usuarios")
         print("5. 🌐 Gestionar IPs autorizadas")
@@ -74,16 +75,18 @@ class PDFSecureCLI:
         print("-" * 30)
     
     def encrypt_pdf_interactive(self):
-        """Proceso interactivo de cifrado de PDF"""
-        print("\n🔒 CIFRAR PDF")
+        """Proceso interactivo de cifrado de archivos"""
+        print("\n🔒 CIFRAR ARCHIVO")
         print("-" * 30)
-        
-        # Solicitar archivo PDF
-        pdf_path = input("📄 Ruta del archivo PDF: ").strip()
+        print("ℹ️  Formatos soportados: PDF, DOCX, XLSX, TXT, PBIP, PBIX")
+        print()
+
+        # Solicitar archivo
+        pdf_path = input("📄 Ruta del archivo: ").strip()
         if not pdf_path:
-            print("❌ Debe especificar un archivo PDF")
+            print("❌ Debe especificar un archivo")
             return
-        
+
         if not Path(pdf_path).exists():
             print(f"❌ El archivo no existe: {pdf_path}")
             return
@@ -109,23 +112,23 @@ class PDFSecureCLI:
                 pdf_path, output_path, authorized_users
             )
             
-            print(f"✅ PDF cifrado exitosamente: {output_path}")
+            print(f"✅ Archivo cifrado exitosamente: {output_path}")
             print("\n🔑 CLAVES DE USUARIO GENERADAS:")
             print("-" * 50)
             for username, key in user_keys.items():
                 print(f"👤 {username}")
                 print(f"   Clave: {key}")
                 print()
-            
+
             print("⚠️  IMPORTANTE: Guarda estas claves de forma segura.")
-            print("   Cada usuario necesita su clave para acceder al PDF.")
+            print("   Cada usuario necesita su clave para acceder al archivo.")
             
         except Exception as e:
             print(f"❌ Error al cifrar: {str(e)}")
     
     def decrypt_pdf_interactive(self):
-        """Proceso interactivo de descifrado de PDF"""
-        print("\n🔓 DESCIFRAR PDF")
+        """Proceso interactivo de descifrado de archivos"""
+        print("\n🔓 DESCIFRAR ARCHIVO")
         print("-" * 30)
 
         # Mostrar usuario actual del sistema
@@ -179,7 +182,7 @@ class PDFSecureCLI:
                 encrypted_path, user_key, output_path
             )
             
-            print(f"✅ PDF descifrado exitosamente: {decrypted_path}")
+            print(f"✅ Archivo descifrado exitosamente: {decrypted_path}")
             
         except Exception as e:
             print(f"❌ Error al descifrar: {str(e)}")
@@ -661,10 +664,10 @@ class PDFSecureCLI:
         print("\n❓ AYUDA")
         print("=" * 50)
         print("""
-📖 CÓMO USAR PDF SECURE v2.0
+📖 CÓMO USAR PDF SECURE v2.2
 
 🔒 CIFRADO:
-1. Selecciona un archivo PDF para cifrar
+1. Selecciona un archivo para cifrar (PDF, DOCX, XLSX, TXT, PBIP, PBIX)
 2. Especifica usuarios autorizados (separados por comas)
 3. El sistema genera claves únicas para cada usuario
 4. Guarda las claves de forma segura
@@ -673,7 +676,7 @@ class PDFSecureCLI:
 1. Proporciona el archivo cifrado (.enc)
 2. Introduce tu clave de usuario personalizada
 3. El sistema verifica tu autorización
-4. Si todo es correcto, descifra el PDF
+4. Si todo es correcto, descifra el archivo
 
 👥 GESTIÓN DE USUARIOS:
 - Cada usuario tiene una clave única por archivo

@@ -21,7 +21,7 @@ sys.path.append(str(Path(__file__).parent / 'app'))
 
 from config import SecureConfig
 from user_auth import UserAuthManager
-from pdf_utils_v2 import PDFSecureManager
+from pdf_utils_v2 import FileSecureManager
 
 
 def diagnosticar_archivo(archivo_enc):
@@ -33,7 +33,7 @@ def diagnosticar_archivo(archivo_enc):
     try:
         config = SecureConfig()
         auth_manager = UserAuthManager(config)
-        pdf_manager = PDFSecureManager(config, auth_manager)
+        pdf_manager = FileSecureManager(config, auth_manager)
 
         # Verificar que el archivo existe
         if not Path(archivo_enc).exists():

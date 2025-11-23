@@ -1,6 +1,7 @@
-# 📄 PDF Secure v2.1 - Guía Completa para Principiantes
+# 📄 PDF Secure v2.2 - Guía Completa para Principiantes
 
-> Sistema de cifrado de PDFs con autenticación por usuario, visualizador en memoria y control de acceso basado en IP local.
+> Sistema de cifrado de archivos con autenticación por usuario, visualizador en memoria y control de acceso basado en IP local.
+> **Soporta múltiples formatos**: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -12,36 +13,38 @@
 
 1. [¿Qué es PDF Secure?](#-qué-es-pdf-secure)
 2. [Características Principales](#-características-principales)
-3. [🆕 API de Detección de Usuarios](#-api-de-detección-de-usuarios)
-4. [Requisitos del Sistema](#-requisitos-del-sistema)
-5. [Instalación Paso a Paso](#-instalación-paso-a-paso)
-6. [Configuración Inicial](#-configuración-inicial)
-7. [Cómo Usar el Programa](#-cómo-usar-el-programa)
-8. [Ejemplos Prácticos](#-ejemplos-prácticos)
-9. [Preguntas Frecuentes](#-preguntas-frecuentes)
-10. [Solución de Problemas](#-solución-de-problemas)
-11. [Seguridad y Buenas Prácticas](#-seguridad-y-buenas-prácticas)
+3. [📁 Soporte Multi-formato](#-soporte-multi-formato-nuevo-en-v22)
+4. [🆕 API de Detección de Usuarios](#-api-de-detección-de-usuarios)
+5. [Requisitos del Sistema](#-requisitos-del-sistema)
+6. [Instalación Paso a Paso](#-instalación-paso-a-paso)
+7. [Configuración Inicial](#-configuración-inicial)
+8. [Cómo Usar el Programa](#-cómo-usar-el-programa)
+9. [Ejemplos Prácticos](#-ejemplos-prácticos)
+10. [Preguntas Frecuentes](#-preguntas-frecuentes)
+11. [Solución de Problemas](#-solución-de-problemas)
+12. [Seguridad y Buenas Prácticas](#-seguridad-y-buenas-prácticas)
 
 ---
 
 ## 🤔 **¿Qué es PDF Secure?**
 
-PDF Secure es un programa que te permite **proteger tus archivos PDF** para que solo personas autorizadas puedan abrirlos. 
+PDF Secure es un programa que te permite **proteger tus archivos** (PDF, DOCX, XLSX, TXT, PBIP, PBIX) para que solo personas autorizadas puedan abrirlos.
 
 ### **¿Cómo funciona?**
 
-1. **Tú cifras** un archivo PDF y especificas quién puede abrirlo
+1. **Tú cifras** un archivo y especificas quién puede abrirlo
 2. El programa **genera claves únicas** para cada persona autorizada
-3. **Cada persona usa su clave** para descifrar y ver el PDF
+3. **Cada persona usa su clave** para descifrar y ver el archivo
 4. El sistema **registra quién accedió** y cuándo (auditoría completa)
 
 ### **¿Por qué usarlo?**
 
-✅ Proteger documentos confidenciales  
-✅ Controlar quién puede ver tus PDFs  
-✅ Saber exactamente quién accedió a cada documento  
-✅ Las claves expiran automáticamente (seguridad temporal)  
-✅ No depende de contraseñas débiles  
+✅ Proteger documentos confidenciales
+✅ Controlar quién puede ver tus archivos
+✅ Saber exactamente quién accedió a cada documento
+✅ Las claves expiran automáticamente (seguridad temporal)
+✅ No depende de contraseñas débiles
+✅ **Nuevo**: Soporta múltiples formatos de archivo  
 
 ---
 
@@ -50,13 +53,52 @@ PDF Secure es un programa que te permite **proteger tus archivos PDF** para que 
 - 🔐 **Cifrado AES-256**: Nivel militar de seguridad (v2.1 con metadatos cifrados)
 - 👥 **Claves por Usuario**: Cada persona tiene su propia clave única
 - 🔑 **Verificación de Usuario del Sistema**: Valida que el usuario logueado coincida con el autorizado
+- 📁 **Soporte Multi-formato (v2.2)**: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 - 🌐 **Control de IP Local**: Whitelist opcional de dispositivos autorizados
 - 📊 **Auditoría Completa**: Registro detallado de todos los accesos
 - ⏰ **Expiración Automática**: Las claves caducan después de 30 días (configurable)
 - 🖥️ **Dos Interfaces**: GUI amigable y CLI para expertos
 - 🔒 **Seguridad Mejorada**: Sin contraseñas hardcodeadas en el código
 - 🆕 **API de Usuarios**: Detecta y lista usuarios del sistema operativo
-- 👁️ **Visualizador en Memoria**: Ver PDFs sin guardarlos en disco (solo lectura)
+- 👁️ **Visualizadores en Memoria**: Ver archivos sin guardarlos en disco (solo lectura)
+  - PDF: Renderizado completo con PyMuPDF
+  - Texto: Archivos .txt, .md, .log, .csv
+  - Imágenes: .jpg, .png, .gif, .bmp, .webp
+  - Office: Información de archivos .docx, .xlsx, .pptx
+
+---
+
+## 📁 **Soporte Multi-formato (Nuevo en v2.2)**
+
+PDF Secure ahora soporta el cifrado y descifrado de múltiples formatos de archivo, no solo PDFs.
+
+### **Formatos Soportados:**
+
+| Formato | Extensión | Visualización en Memoria |
+|---------|-----------|-------------------------|
+| PDF | `.pdf` | ✅ Renderizado completo |
+| Word | `.docx` | ℹ️ Información del archivo |
+| Excel | `.xlsx` | ℹ️ Información del archivo |
+| Texto | `.txt` | ✅ Editor de texto |
+| Power BI Project | `.pbip` | ℹ️ Información del archivo |
+| Power BI Report | `.pbix` | ℹ️ Información del archivo |
+| Markdown | `.md` | ✅ Editor de texto |
+| CSV | `.csv` | ✅ Editor de texto |
+| Imágenes | `.jpg, .png, .gif, .bmp, .webp` | ✅ Visor de imágenes |
+
+### **¿Cómo funciona?**
+
+1. **Cifrado**: El sistema detecta automáticamente el tipo de archivo y lo almacena en los metadatos cifrados
+2. **Descifrado**: Al descifrar, el sistema identifica el formato original y lo restaura
+3. **Visualización**: Según el tipo de archivo, se muestra con el visualizador apropiado
+4. **Compatibilidad**: Los archivos cifrados con v2.0 y v2.1 siguen siendo compatibles
+
+### **Ventajas:**
+
+✅ **Un solo sistema** para todos tus documentos confidenciales
+✅ **Mismo nivel de seguridad** (AES-256) para todos los formatos
+✅ **Mismas capacidades** de control de acceso y auditoría
+✅ **Visualización segura** sin necesidad de guardar en disco
 
 ---
 
@@ -319,10 +361,14 @@ Se abrirá una ventana con pestañas:
 
 #### **Las Pestañas:**
 
-1. **🔒 Cifrar PDF**: Para proteger tus archivos
-2. **🔓 Descifrar PDF**: Para abrir archivos protegidos (2 opciones disponibles)
-   - **👁️ Ver PDF**: Visualiza el PDF en memoria sin guardarlo en disco (solo lectura)
-   - **🔓 Descifrar y Guardar**: Descifra y guarda el PDF en disco como antes
+1. **🔒 Cifrar Archivo**: Para proteger tus archivos (PDF, DOCX, XLSX, TXT, PBIP, PBIX)
+2. **🔓 Descifrar Archivo**: Para abrir archivos protegidos (2 opciones disponibles)
+   - **👁️ Ver Archivo**: Visualiza el archivo en memoria sin guardarlo en disco (solo lectura)
+     - PDF: Renderizado completo
+     - Texto: Editor de texto integrado
+     - Imágenes: Visor de imágenes
+     - Office: Información del archivo
+   - **🔓 Descifrar y Guardar**: Descifra y guarda el archivo en disco
 3. **👥 Usuarios**: Gestionar claves de usuario
 4. **🌐 IPs**: Configurar qué dispositivos pueden acceder
 5. **📊 Logs**: Ver quién accedió a qué archivos
@@ -349,15 +395,18 @@ Verás un menú interactivo:
 ```
 🔧 MENÚ PRINCIPAL
 ------------------------------
-1. 🔒 Cifrar PDF
-2. 🔓 Descifrar PDF
+1. 🔒 Cifrar Archivo
+2. 🔓 Descifrar Archivo
 3. 📋 Ver información de archivo
 4. 👥 Gestionar usuarios
 5. 🌐 Gestionar IPs autorizadas
 6. 📊 Ver logs de acceso
 7. 🧹 Mantenimiento
-8. ❓ Ayuda
-9. 🚪 Salir
+8. 🔍 Gestionar API de Usuarios
+9. ❓ Ayuda
+0. 🚪 Salir
+
+ℹ️  Formatos soportados: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 ```
 
 Simplemente escribe el número de la opción que quieres y presiona Enter.
@@ -366,17 +415,18 @@ Simplemente escribe el número de la opción que quieres y presiona Enter.
 
 ## 📚 **Ejemplos Prácticos**
 
-### **Ejemplo 1: Proteger un PDF para 3 Personas**
+### **Ejemplo 1: Proteger un Archivo para 3 Personas**
 
 #### **Usando la GUI:**
 
 1. **Abre la GUI**: `python3 app/app_gui.py`
 
-2. **Ve a la pestaña "🔒 Cifrar PDF"**
+2. **Ve a la pestaña "🔒 Cifrar Archivo"**
 
-3. **Selecciona tu PDF:**
+3. **Selecciona tu archivo:**
    - Click en "Examinar"
-   - Busca y selecciona tu archivo (ej: `contrato_secreto.pdf`)
+   - Busca y selecciona tu archivo (ej: `contrato_secreto.pdf`, `datos.xlsx`, `reporte.docx`)
+   - Formatos soportados: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 
 4. **El archivo de salida se autocompleta** (ej: `contrato_secreto.enc`)
 
@@ -385,7 +435,7 @@ Simplemente escribe el número de la opción que quieres y presiona Enter.
    juan, maria, carlos
    ```
 
-6. **Click en "🔒 Cifrar PDF"**
+6. **Click en "🔒 Cifrar"**
 
 7. **¡Aparecen las claves!** En la parte inferior verás:
    ```
@@ -938,8 +988,14 @@ Este proyecto está licenciado bajo la Licencia MIT. Ver archivo [LICENSE](LICEN
 ## 👨‍💻 **Autor**
 
 **Desarrollado por**: Zeligmax
-**Versión**: 2.1
+**Versión**: 2.2
 **Fecha**: Enero 2025
+
+**Novedades v2.2**:
+- 📁 **Soporte multi-formato**: PDF, DOCX, XLSX, TXT, PBIP, PBIX
+- 👁️ **Múltiples visualizadores**: PDF (renderizado), texto, imágenes, información de Office
+- 🔄 **Compatibilidad**: Compatible con archivos v2.0 y v2.1
+- 🎨 **Interfaz mejorada**: Indicadores de formatos soportados
 
 **Novedades v2.1**:
 - Visualizador de PDF en memoria (sin guardar en disco)
