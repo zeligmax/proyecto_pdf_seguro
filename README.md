@@ -1,6 +1,6 @@
-# 📄 PDF Secure v2.2 - Guía Completa para Principiantes
+# 📁 File Secure v3.1 - Guía Completa para Principiantes
 
-> Sistema de cifrado de archivos con autenticación por usuario, visualizador en memoria y control de acceso basado en IP local.
+> Sistema profesional de cifrado de archivos con autenticación por usuario, visualizador en memoria y control de acceso basado en IP local.
 > **Soporta múltiples formatos**: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
@@ -11,9 +11,9 @@
 
 ## 📖 **Tabla de Contenidos**
 
-1. [¿Qué es PDF Secure?](#-qué-es-pdf-secure)
+1. [¿Qué es File Secure?](#-qué-es-file-secure)
 2. [Características Principales](#-características-principales)
-3. [📁 Soporte Multi-formato](#-soporte-multi-formato-nuevo-en-v22)
+3. [📁 Soporte Multi-formato](#-soporte-multi-formato-desde-v31)
 4. [🆕 API de Detección de Usuarios](#-api-de-detección-de-usuarios)
 5. [Requisitos del Sistema](#-requisitos-del-sistema)
 6. [Instalación Paso a Paso](#-instalación-paso-a-paso)
@@ -26,9 +26,9 @@
 
 ---
 
-## 🤔 **¿Qué es PDF Secure?**
+## 🤔 **¿Qué es File Secure?**
 
-PDF Secure es un programa que te permite **proteger tus archivos** (PDF, DOCX, XLSX, TXT, PBIP, PBIX) para que solo personas autorizadas puedan abrirlos.
+File Secure es un sistema profesional que te permite **proteger cualquier tipo de archivo** (PDF, DOCX, XLSX, TXT, PBIP, PBIX, y más) para que solo personas autorizadas puedan abrirlos.
 
 ### **¿Cómo funciona?**
 
@@ -53,7 +53,7 @@ PDF Secure es un programa que te permite **proteger tus archivos** (PDF, DOCX, X
 - 🔐 **Cifrado AES-256**: Nivel militar de seguridad (v2.1 con metadatos cifrados)
 - 👥 **Claves por Usuario**: Cada persona tiene su propia clave única
 - 🔑 **Verificación de Usuario del Sistema**: Valida que el usuario logueado coincida con el autorizado
-- 📁 **Soporte Multi-formato (v2.2)**: PDF, DOCX, XLSX, TXT, PBIP, PBIX
+- 📁 **Soporte Multi-formato (v3.1)**: PDF, DOCX, XLSX, TXT, PBIP, PBIX, y más
 - 🌐 **Control de IP Local**: Whitelist opcional de dispositivos autorizados
 - 📊 **Auditoría Completa**: Registro detallado de todos los accesos
 - ⏰ **Expiración Automática**: Las claves caducan después de 30 días (configurable)
@@ -68,9 +68,9 @@ PDF Secure es un programa que te permite **proteger tus archivos** (PDF, DOCX, X
 
 ---
 
-## 📁 **Soporte Multi-formato (Nuevo en v2.2)**
+## 📁 **Soporte Multi-formato (Desde v3.1)**
 
-PDF Secure ahora soporta el cifrado y descifrado de múltiples formatos de archivo, no solo PDFs.
+File Secure es un sistema completo de cifrado de archivos que soporta múltiples formatos, no solo PDFs.
 
 ### **Formatos Soportados:**
 
@@ -106,7 +106,7 @@ PDF Secure ahora soporta el cifrado y descifrado de múltiples formatos de archi
 
 ### **Nueva Funcionalidad: API REST para Detección de Usuarios**
 
-PDF Secure ahora incluye una API REST que permite detectar y listar usuarios del sistema operativo (Windows/Linux/macOS).
+File Secure incluye una API REST que permite detectar y listar usuarios del sistema operativo (Windows/Linux/macOS).
 
 #### **¿Para qué sirve?**
 
@@ -695,7 +695,7 @@ Verás información como:
 
 ### **¿Qué significa "Usuario del sistema no coincide"?**
 
-**Explicación**: PDF Secure v2.1 implementa una capa adicional de seguridad que verifica que el usuario logueado en el sistema operativo coincida con el usuario autorizado para la clave.
+**Explicación**: File Secure implementa una capa adicional de seguridad que verifica que el usuario logueado en el sistema operativo coincida con el usuario autorizado para la clave.
 
 **Ejemplo del error:**
 ```
@@ -937,7 +937,7 @@ Si no puedes cambiar de usuario, pide al administrador que cifre nuevamente el a
 
 ### **🔐 Autenticación de Dos Factores**
 
-**PDF Secure v2.1 implementa autenticación de dos factores:**
+**File Secure implementa autenticación de dos factores:**
 
 1. **Factor 1 - Lo que sabes**: La clave de usuario (64 caracteres hexadecimales)
 2. **Factor 2 - Quién eres**: Tu nombre de usuario en el sistema operativo
@@ -988,14 +988,21 @@ Este proyecto está licenciado bajo la Licencia MIT. Ver archivo [LICENSE](LICEN
 ## 👨‍💻 **Autor**
 
 **Desarrollado por**: Zeligmax
-**Versión**: 2.2
+**Versión**: 3.1
 **Fecha**: Enero 2025
 
-**Novedades v2.2**:
+**Novedades v3.1**:
+- 🎯 **Renombramiento completo**: De "PDF Secure" a "File Secure"
+- 🔧 **Arquitectura mejorada**: Clase `FileSecureManager` (antes `PDFSecureManager`)
 - 📁 **Soporte multi-formato**: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 - 👁️ **Múltiples visualizadores**: PDF (renderizado), texto, imágenes, información de Office
-- 🔄 **Compatibilidad**: Compatible con archivos v2.0 y v2.1
-- 🎨 **Interfaz mejorada**: Indicadores de formatos soportados
+- 🔄 **Compatibilidad total**: Compatible con archivos v2.0, v2.1 y v2.2
+- 🎨 **Interfaz actualizada**: GUI y CLI reflejan la nueva identidad
+
+**Novedades v2.2** (integradas en v3.1):
+- Soporte multi-formato inicial
+- Visualizadores especializados por tipo de archivo
+- Metadatos con información de tipo de archivo
 
 **Novedades v2.1**:
 - Visualizador de PDF en memoria (sin guardar en disco)
@@ -1044,6 +1051,6 @@ python3 app/app_gui.py
 
 **Si este proyecto te resultó útil, ¡dale una ⭐ en GitHub!**
 
-[⬆ Volver arriba](#-pdf-secure-v21---guía-completa-para-principiantes)
+[⬆ Volver arriba](#-file-secure-v31---guía-completa-para-principiantes)
 
 </div>

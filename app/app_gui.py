@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-PDF Secure GUI - Version 2.0 - COMPLETO
-Interfaz gráfica para el sistema de PDFs seguros
+File Secure GUI - Version 3.1
+Interfaz gráfica para el sistema de cifrado de archivos seguros
+Soporta múltiples formatos: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 """
 
 import os
@@ -34,7 +35,7 @@ class PDFSecureGUI:
     def __init__(self):
         # Crear ventana PRIMERO
         self.root = tk.Tk()
-        self.root.title("PDF Secure v2.2 - Multi-formato")
+        self.root.title("File Secure v3.1 - Multi-formato")
         self.root.geometry("900x700")
         self.root.minsize(800, 600)
         

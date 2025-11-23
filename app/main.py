@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-PDF Secure CLI - Version 2.2
+File Secure CLI - Version 3.1
 Interfaz de línea de comandos para el sistema de cifrado de archivos seguros con autenticación por usuario.
 Soporta: PDF, DOCX, XLSX, TXT, PBIP, PBIX
 """
@@ -41,7 +41,7 @@ class PDFSecureCLI:
     def show_banner(self):
         """Muestra el banner de la aplicación"""
         print("\n" + "="*60)
-        print("📄 PDF SECURE v2.2 - Sistema de Cifrado de Archivos Seguros")
+        print("📁 FILE SECURE v3.1 - Sistema de Cifrado de Archivos Seguros")
         print("🔐 Con autenticación por usuario y trazabilidad completa")
         print("="*60)
         
@@ -664,7 +664,7 @@ class PDFSecureCLI:
         print("\n❓ AYUDA")
         print("=" * 50)
         print("""
-📖 CÓMO USAR PDF SECURE v2.2
+📖 CÓMO USAR FILE SECURE v3.1
 
 🔒 CIFRADO:
 1. Selecciona un archivo para cifrar (PDF, DOCX, XLSX, TXT, PBIP, PBIX)
