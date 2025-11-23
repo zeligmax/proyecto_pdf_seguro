@@ -108,6 +108,13 @@ class SystemUsersDetector:
                     in_user_section = False
 
                     for line in lines:
+                        # Detener si encontramos el mensaje de éxito del sistema
+                        if ('Se ha completado' in line or
+                            'Se completó' in line or
+                            'The command completed' in line or
+                            'successfully' in line.lower()):
+                            break
+
                         if '----' in line:
                             in_user_section = True
                             continue
@@ -116,7 +123,7 @@ class SystemUsersDetector:
                             # Extraer usuarios de la línea
                             user_names = line.split()
                             for username in user_names:
-                                if username and not username.startswith('Se completó'):
+                                if username:
                                     users.append({
                                         'username': username,
                                         'full_name': '',
