@@ -136,72 +136,64 @@ class PDFSecureGUI:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text=t('tab_encrypt', 'gui'))
 
-        # Crear encabezado con gradiente verde pastel
-        ModernTheme.create_gradient_header(frame, t('header_encrypt', 'gui'), 'pastel_green')
+        # Crear encabezado con fondo gris
+        ModernTheme.create_gradient_header(frame, t('header_encrypt', 'gui'), 'bg_main')
 
         main = ttk.Frame(frame, padding=20)
         main.pack(fill=tk.BOTH, expand=True)
 
-        # Archivo a cifrar - Frame verde pastel
-        pdf_frame = ttk.LabelFrame(main, text=t('label_file_to_encrypt', 'gui'),
-                                    padding=15, style='Green.TLabelframe')
-        pdf_frame.pack(fill=tk.X, pady=(0, 15))
+        # Archivo a cifrar - Frame blanco simple (compacto)
+        pdf_frame = ttk.LabelFrame(main, text=t('label_file_to_encrypt', 'gui'), padding=8)
+        pdf_frame.pack(fill=tk.X, pady=(0, 5))
 
-        pdf_entry = ttk.Frame(pdf_frame, style='Green.TLabelframe')
-        pdf_entry.pack(fill=tk.X, pady=(5, 0))
-        ttk.Entry(pdf_entry, textvariable=self.pdf_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+        pdf_entry = ttk.Frame(pdf_frame)
+        pdf_entry.pack(fill=tk.X)
+        ttk.Entry(pdf_entry, textvariable=self.pdf_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
         ModernTheme.create_modern_button(pdf_entry, t('button_browse', 'gui'),
                                         command=self.browse_pdf, style='Secondary').pack(side=tk.RIGHT)
 
-        info_label = tk.Label(pdf_frame, text=t('info_supported_formats', 'gui'),
-                             bg=ModernTheme.COLORS['pastel_green'],
-                             fg=ModernTheme.COLORS['text_secondary'],
-                             font=ModernTheme.FONTS['small'])
-        info_label.pack(anchor=tk.W, pady=(8, 0))
+        ttk.Label(pdf_frame, text=t('info_supported_formats', 'gui'),
+                 foreground=ModernTheme.COLORS['text_secondary'],
+                 font=ModernTheme.FONTS['small']).pack(anchor=tk.W, pady=(3, 0))
 
-        # Salida - Frame amarillo pastel
-        out_frame = ttk.LabelFrame(main, text=t('label_output', 'gui'),
-                                   padding=15, style='Yellow.TLabelframe')
-        out_frame.pack(fill=tk.X, pady=(0, 15))
+        # Salida - Frame blanco simple (compacto)
+        out_frame = ttk.LabelFrame(main, text=t('label_output', 'gui'), padding=8)
+        out_frame.pack(fill=tk.X, pady=(0, 5))
 
-        out_entry = ttk.Frame(out_frame, style='Yellow.TLabelframe')
-        out_entry.pack(fill=tk.X, pady=(5, 0))
-        ttk.Entry(out_entry, textvariable=self.output_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+        out_entry = ttk.Frame(out_frame)
+        out_entry.pack(fill=tk.X)
+        ttk.Entry(out_entry, textvariable=self.output_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 8))
         ModernTheme.create_modern_button(out_entry, t('button_browse', 'gui'),
                                         command=self.browse_output, style='Secondary').pack(side=tk.RIGHT)
 
-        # Usuarios - Frame azul pastel
-        users_frame = ttk.LabelFrame(main, text=t('label_users', 'gui'),
-                                     padding=15, style='Blue.TLabelframe')
-        users_frame.pack(fill=tk.X, pady=(0, 15))
+        # Usuarios - Frame blanco simple (compacto)
+        users_frame = ttk.LabelFrame(main, text=t('label_users', 'gui'), padding=8)
+        users_frame.pack(fill=tk.X, pady=(0, 5))
 
-        info_label = tk.Label(users_frame, text=t('label_users_comma_separated', 'gui'),
-                             bg=ModernTheme.COLORS['pastel_blue'],
-                             fg=ModernTheme.COLORS['text_primary'],
-                             font=ModernTheme.FONTS['body'])
-        info_label.pack(anchor=tk.W, pady=(0, 8))
+        ttk.Label(users_frame, text=t('label_users_comma_separated', 'gui'),
+                 foreground=ModernTheme.COLORS['text_primary'],
+                 font=ModernTheme.FONTS['small']).pack(anchor=tk.W, pady=(0, 3))
         ttk.Entry(users_frame, textvariable=self.users_var, width=50).pack(fill=tk.X)
 
-        # Botones con estilos modernos
+        # Botones con estilos modernos (compacto)
         btn_frame = ttk.Frame(main)
-        btn_frame.pack(fill=tk.X, pady=20)
+        btn_frame.pack(fill=tk.X, pady=8)
         ModernTheme.create_modern_button(btn_frame, t('button_encrypt', 'gui'),
                                         command=self.encrypt_pdf, style='Primary').pack(side=tk.LEFT, padx=(0, 10))
         ModernTheme.create_modern_button(btn_frame, t('button_clear', 'gui'),
                                         command=self.clear_encrypt, style='Warning').pack(side=tk.LEFT)
-        
-        # Resultados - Frame rosa pastel
-        res_frame = ttk.LabelFrame(main, text=t('label_keys_section', 'gui'),
-                                   padding=15, style='Pink.TLabelframe')
-        res_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
-        self.encrypt_results = scrolledtext.ScrolledText(res_frame, height=10,
+        # Resultados - Frame blanco simple (expandido para ocupar todo el espacio restante)
+        res_frame = ttk.LabelFrame(main, text=t('label_keys_section', 'gui'), padding=10)
+        res_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 0))
+
+        self.encrypt_results = scrolledtext.ScrolledText(res_frame, height=18,
                                                          font=ModernTheme.FONTS['code'],
                                                          bg=ModernTheme.COLORS['bg_white'],
                                                          fg=ModernTheme.COLORS['text_primary'],
                                                          relief='flat',
                                                          borderwidth=2)
-        self.encrypt_results.pack(fill=tk.BOTH, expand=True, pady=(5, 10))
+        self.encrypt_results.pack(fill=tk.BOTH, expand=True, pady=(3, 3))
 
         ModernTheme.create_modern_button(res_frame, t('button_copy', 'gui'),
                                         command=self.copy_results, style='Secondary').pack()
@@ -210,8 +202,8 @@ class PDFSecureGUI:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text=t('tab_decrypt', 'gui'))
 
-        # Crear encabezado con gradiente rosa pastel
-        ModernTheme.create_gradient_header(frame, t('header_decrypt', 'gui'), 'pastel_pink')
+        # Crear encabezado con fondo gris
+        ModernTheme.create_gradient_header(frame, t('header_decrypt', 'gui'), 'bg_main')
 
         main = ttk.Frame(frame, padding=20)
         main.pack(fill=tk.BOTH, expand=True)
@@ -227,52 +219,40 @@ class PDFSecureGUI:
             except:
                 current_user = "Unknown"
 
-        # Info usuario - Frame azul pastel
-        user_info_frame = ttk.LabelFrame(main, text="👤 " + t('label_current_user', 'gui', username=''),
-                                        padding=15, style='Blue.TLabelframe')
+        # Info usuario - Frame blanco simple
+        user_info_frame = ttk.LabelFrame(main, text="👤 " + t('label_current_user', 'gui', username=''), padding=15)
         user_info_frame.pack(fill=tk.X, pady=(0, 15))
 
-        user_label = tk.Label(user_info_frame,
-                             text=t('label_current_user', 'gui', username=current_user),
-                             bg=ModernTheme.COLORS['pastel_blue'],
-                             fg=ModernTheme.COLORS['info'],
-                             font=ModernTheme.FONTS['heading'])
-        user_label.pack(anchor=tk.W)
+        ttk.Label(user_info_frame,
+                 text=t('label_current_user', 'gui', username=current_user),
+                 foreground=ModernTheme.COLORS['info'],
+                 font=ModernTheme.FONTS['heading']).pack(anchor=tk.W)
 
-        info_label = tk.Label(user_info_frame,
-                             text=t('info_only_decrypt_authorized', 'gui'),
-                             bg=ModernTheme.COLORS['pastel_blue'],
-                             fg=ModernTheme.COLORS['text_secondary'],
-                             font=ModernTheme.FONTS['small'])
-        info_label.pack(anchor=tk.W, pady=(5, 0))
+        ttk.Label(user_info_frame,
+                 text=t('info_only_decrypt_authorized', 'gui'),
+                 foreground=ModernTheme.COLORS['text_secondary'],
+                 font=ModernTheme.FONTS['small']).pack(anchor=tk.W, pady=(5, 0))
 
-        # Archivo cifrado - Frame rosa pastel
-        enc_frame = ttk.LabelFrame(main, text=t('label_encrypted_file_section', 'gui'),
-                                   padding=15, style='Pink.TLabelframe')
+        # Archivo cifrado - Frame blanco simple
+        enc_frame = ttk.LabelFrame(main, text=t('label_encrypted_file_section', 'gui'), padding=15)
         enc_frame.pack(fill=tk.X, pady=(0, 15))
 
-        enc_entry = ttk.Frame(enc_frame, style='Pink.TLabelframe')
+        enc_entry = ttk.Frame(enc_frame)
         enc_entry.pack(fill=tk.X, pady=(5, 0))
         ttk.Entry(enc_entry, textvariable=self.encrypted_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
         ModernTheme.create_modern_button(enc_entry, t('button_browse', 'gui'),
                                         command=self.browse_encrypted, style='Secondary').pack(side=tk.RIGHT)
 
-        # Clave - Frame amarillo pastel
-        key_frame = ttk.LabelFrame(main, text=t('label_key_section', 'gui'),
-                                   padding=15, style='Yellow.TLabelframe')
+        # Clave - Frame blanco simple
+        key_frame = ttk.LabelFrame(main, text=t('label_key_section', 'gui'), padding=15)
         key_frame.pack(fill=tk.X, pady=(0, 15))
 
         key_entry = ttk.Entry(key_frame, textvariable=self.user_key_var, show="*", width=50)
         key_entry.pack(fill=tk.X, pady=(5, 0))
 
         show_var = tk.BooleanVar()
-        show_check = tk.Checkbutton(key_frame, text="Mostrar", variable=show_var,
-                                    bg=ModernTheme.COLORS['pastel_yellow'],
-                                    fg=ModernTheme.COLORS['text_primary'],
-                                    font=ModernTheme.FONTS['body'],
-                                    activebackground=ModernTheme.COLORS['pastel_yellow'],
-                                    command=lambda: key_entry.config(show="" if show_var.get() else "*"))
-        show_check.pack(anchor=tk.W, pady=(8, 0))
+        ttk.Checkbutton(key_frame, text="Mostrar", variable=show_var,
+                       command=lambda: key_entry.config(show="" if show_var.get() else "*")).pack(anchor=tk.W, pady=(8, 0))
 
         # Botones con estilos modernos
         btn_frame = ttk.Frame(main)
@@ -296,8 +276,8 @@ class PDFSecureGUI:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text=t('tab_users', 'gui'))
 
-        # Crear encabezado con gradiente púrpura pastel
-        ModernTheme.create_gradient_header(frame, t('header_users', 'gui'), 'pastel_purple')
+        # Crear encabezado con fondo gris
+        ModernTheme.create_gradient_header(frame, t('header_users', 'gui'), 'bg_main')
 
         main = ttk.Frame(frame, padding=20)
         main.pack(fill=tk.BOTH, expand=True)
@@ -347,27 +327,24 @@ class PDFSecureGUI:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text=t('tab_ips', 'gui'))
 
-        # Crear encabezado con gradiente naranja pastel
-        ModernTheme.create_gradient_header(frame, t('header_ips', 'gui'), 'pastel_orange')
+        # Crear encabezado con fondo gris
+        ModernTheme.create_gradient_header(frame, t('header_ips', 'gui'), 'bg_main')
 
         main = ttk.Frame(frame, padding=20)
         main.pack(fill=tk.BOTH, expand=True)
 
-        # Info actual - Frame azul pastel
-        info_frame = ttk.LabelFrame(main, text=t('info_current_ip', 'gui'),
-                                     padding=15, style='Blue.TLabelframe')
+        # Info actual - Frame blanco simple
+        info_frame = ttk.LabelFrame(main, text=t('info_current_ip', 'gui'), padding=15)
         info_frame.pack(fill=tk.X, pady=(0, 15))
 
         # Guardar referencia para actualizar después
-        self.ip_info_label1 = tk.Label(info_frame, text=t('ip_info_loading', 'gui'),
-                                       bg=ModernTheme.COLORS['pastel_blue'],
-                                       fg=ModernTheme.COLORS['text_primary'],
-                                       font=ModernTheme.FONTS['body'])
+        self.ip_info_label1 = ttk.Label(info_frame, text=t('ip_info_loading', 'gui'),
+                                        foreground=ModernTheme.COLORS['text_primary'],
+                                        font=ModernTheme.FONTS['body'])
         self.ip_info_label1.pack(anchor=tk.W, pady=2)
-        self.ip_info_label2 = tk.Label(info_frame, text=t('ip_info_loading', 'gui'),
-                                       bg=ModernTheme.COLORS['pastel_blue'],
-                                       fg=ModernTheme.COLORS['text_primary'],
-                                       font=ModernTheme.FONTS['body'])
+        self.ip_info_label2 = ttk.Label(info_frame, text=t('ip_info_loading', 'gui'),
+                                        foreground=ModernTheme.COLORS['text_primary'],
+                                        font=ModernTheme.FONTS['body'])
         self.ip_info_label2.pack(anchor=tk.W, pady=2)
 
         # Agregar - Frame naranja pastel
@@ -448,30 +425,27 @@ class PDFSecureGUI:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text=t('tab_logs', 'gui'))
 
-        # Crear encabezado con gradiente azul pastel
-        ModernTheme.create_gradient_header(frame, t('header_logs', 'gui'), 'pastel_blue')
+        # Crear encabezado con fondo gris
+        ModernTheme.create_gradient_header(frame, t('header_logs', 'gui'), 'bg_main')
 
         main = ttk.Frame(frame, padding=20)
         main.pack(fill=tk.BOTH, expand=True)
 
-        # Controles - Frame amarillo pastel
-        ctrl_frame = ttk.LabelFrame(main, text="⚙️ " + t('info_api_controls', 'gui'),
-                                     padding=15, style='Yellow.TLabelframe')
+        # Controles - Frame blanco simple
+        ctrl_frame = ttk.LabelFrame(main, text="⚙️ " + t('info_api_controls', 'gui'), padding=15)
         ctrl_frame.pack(fill=tk.X, pady=(0, 15))
 
-        ctrl = ttk.Frame(ctrl_frame, style='Yellow.TLabelframe')
+        ctrl = ttk.Frame(ctrl_frame)
         ctrl.pack(fill=tk.X)
         ModernTheme.create_modern_button(ctrl, t('button_refresh', 'gui'),
                                         command=self.refresh_logs, style='Secondary').pack(side=tk.LEFT, padx=(0, 20))
-        tk.Label(ctrl, text=t('label_show_limit', 'gui'),
-                bg=ModernTheme.COLORS['pastel_yellow'],
-                fg=ModernTheme.COLORS['text_primary'],
-                font=ModernTheme.FONTS['body']).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(ctrl, text=t('label_show_limit', 'gui'),
+                 foreground=ModernTheme.COLORS['text_primary'],
+                 font=ModernTheme.FONTS['body']).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Combobox(ctrl, textvariable=self.log_limit_var, values=["25", "50", "100"], width=8).pack(side=tk.LEFT)
 
-        # Logs - Frame azul pastel
-        logs_frame = ttk.LabelFrame(main, text=t('info_logs', 'gui'),
-                                    padding=15, style='Blue.TLabelframe')
+        # Logs - Frame blanco simple
+        logs_frame = ttk.LabelFrame(main, text=t('info_logs', 'gui'), padding=15)
         logs_frame.pack(fill=tk.BOTH, expand=True)
 
         self.logs_text = scrolledtext.ScrolledText(logs_frame, height=20,
@@ -489,41 +463,36 @@ class PDFSecureGUI:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text=t('tab_api', 'gui'))
 
-        # Crear encabezado con gradiente verde pastel
-        ModernTheme.create_gradient_header(frame, t('header_api', 'gui'), 'pastel_green')
+        # Crear encabezado con fondo gris
+        ModernTheme.create_gradient_header(frame, t('header_api', 'gui'), 'bg_main')
 
         main = ttk.Frame(frame, padding=20)
         main.pack(fill=tk.BOTH, expand=True)
 
-        # Estado de la API - Frame azul pastel
-        status_frame = ttk.LabelFrame(main, text=t('info_api_status', 'gui'),
-                                      padding=15, style='Blue.TLabelframe')
+        # Estado de la API - Frame blanco simple
+        status_frame = ttk.LabelFrame(main, text=t('info_api_status', 'gui'), padding=15)
         status_frame.pack(fill=tk.X, pady=(0, 15))
 
-        self.api_status_label = tk.Label(status_frame, text=t('api_status_stopped', 'gui'),
-                                         bg=ModernTheme.COLORS['pastel_blue'],
-                                         fg=ModernTheme.COLORS['text_primary'],
-                                         font=ModernTheme.FONTS['subtitle'])
+        self.api_status_label = ttk.Label(status_frame, text=t('api_status_stopped', 'gui'),
+                                          foreground=ModernTheme.COLORS['text_primary'],
+                                          font=ModernTheme.FONTS['subtitle'])
         self.api_status_label.pack(anchor=tk.W, pady=(0, 8))
 
-        self.api_url_label = tk.Label(status_frame, text=t('api_url_na', 'gui'),
-                                      bg=ModernTheme.COLORS['pastel_blue'],
-                                      fg=ModernTheme.COLORS['text_secondary'],
-                                      font=ModernTheme.FONTS['body'])
+        self.api_url_label = ttk.Label(status_frame, text=t('api_url_na', 'gui'),
+                                       foreground=ModernTheme.COLORS['text_secondary'],
+                                       font=ModernTheme.FONTS['body'])
         self.api_url_label.pack(anchor=tk.W, pady=(0, 8))
 
-        self.api_health_label = tk.Label(status_frame, text="",
-                                         bg=ModernTheme.COLORS['pastel_blue'],
-                                         fg=ModernTheme.COLORS['text_secondary'],
-                                         font=ModernTheme.FONTS['body'])
+        self.api_health_label = ttk.Label(status_frame, text="",
+                                          foreground=ModernTheme.COLORS['text_secondary'],
+                                          font=ModernTheme.FONTS['body'])
         self.api_health_label.pack(anchor=tk.W)
 
-        # Controles - Frame verde pastel
-        controls_frame = ttk.LabelFrame(main, text=t('info_api_controls', 'gui'),
-                                        padding=15, style='Green.TLabelframe')
+        # Controles - Frame blanco simple
+        controls_frame = ttk.LabelFrame(main, text=t('info_api_controls', 'gui'), padding=15)
         controls_frame.pack(fill=tk.X, pady=(0, 15))
 
-        btn_frame = ttk.Frame(controls_frame, style='Green.TLabelframe')
+        btn_frame = ttk.Frame(controls_frame)
         btn_frame.pack(fill=tk.X)
 
         ModernTheme.create_modern_button(btn_frame, t('button_start_api', 'gui'),
@@ -533,7 +502,7 @@ class PDFSecureGUI:
         ModernTheme.create_modern_button(btn_frame, t('button_refresh_status', 'gui'),
                                         command=self.refresh_api_status, style='Secondary').pack(side=tk.LEFT, padx=(0, 10))
 
-        btn_frame2 = ttk.Frame(controls_frame, style='Green.TLabelframe')
+        btn_frame2 = ttk.Frame(controls_frame)
         btn_frame2.pack(fill=tk.X, pady=(10, 0))
 
         ModernTheme.create_modern_button(btn_frame2, t('button_open_browser', 'gui'),
@@ -541,9 +510,8 @@ class PDFSecureGUI:
         ModernTheme.create_modern_button(btn_frame2, t('button_list_users', 'gui'),
                                         command=self.list_system_users, style='Secondary').pack(side=tk.LEFT)
 
-        # Lista de usuarios del sistema - Frame amarillo pastel
-        users_frame = ttk.LabelFrame(main, text=t('info_system_users', 'gui'),
-                                     padding=15, style='Yellow.TLabelframe')
+        # Lista de usuarios del sistema - Frame blanco simple
+        users_frame = ttk.LabelFrame(main, text=t('info_system_users', 'gui'), padding=15)
         users_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
 
         self.system_users_text = scrolledtext.ScrolledText(users_frame, height=15,
@@ -571,24 +539,22 @@ class PDFSecureGUI:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text=t('tab_settings', 'gui'))
 
-        # Crear encabezado con gradiente rosa pastel
-        ModernTheme.create_gradient_header(frame, t('header_settings', 'gui'), 'pastel_pink')
+        # Crear encabezado con fondo gris
+        ModernTheme.create_gradient_header(frame, t('header_settings', 'gui'), 'bg_main')
 
         main = ttk.Frame(frame, padding=20)
         main.pack(fill=tk.BOTH, expand=True)
 
-        # Sección de idioma - Frame amarillo pastel
-        lang_frame = ttk.LabelFrame(main, text=t('info_language_section', 'gui'),
-                                    padding=15, style='Yellow.TLabelframe')
+        # Sección de idioma - Frame blanco simple
+        lang_frame = ttk.LabelFrame(main, text=t('info_language_section', 'gui'), padding=15)
         lang_frame.pack(fill=tk.X, pady=(0, 15))
 
-        tk.Label(lang_frame, text=t('settings_language_select', 'gui'),
-                bg=ModernTheme.COLORS['pastel_yellow'],
-                fg=ModernTheme.COLORS['text_primary'],
-                font=ModernTheme.FONTS['heading']).pack(anchor=tk.W, pady=(0, 10))
+        ttk.Label(lang_frame, text=t('settings_language_select', 'gui'),
+                 foreground=ModernTheme.COLORS['text_primary'],
+                 font=ModernTheme.FONTS['heading']).pack(anchor=tk.W, pady=(0, 10))
 
         # Dropdown de idiomas
-        lang_selector_frame = tk.Frame(lang_frame, bg=ModernTheme.COLORS['pastel_yellow'])
+        lang_selector_frame = ttk.Frame(lang_frame)
         lang_selector_frame.pack(fill=tk.X, pady=(0, 10))
 
         language_options = [
@@ -597,50 +563,40 @@ class PDFSecureGUI:
         ]
 
         for lang_name, lang_code in language_options:
-            tk.Radiobutton(
+            ttk.Radiobutton(
                 lang_selector_frame,
                 text=lang_name,
                 variable=self.language_var,
                 value=lang_code,
-                command=self.on_language_change,
-                bg=ModernTheme.COLORS['pastel_yellow'],
-                fg=ModernTheme.COLORS['text_primary'],
-                font=ModernTheme.FONTS['body'],
-                activebackground=ModernTheme.COLORS['pastel_yellow'],
-                selectcolor=ModernTheme.COLORS['success']
+                command=self.on_language_change
             ).pack(anchor=tk.W, pady=2)
 
         # Info sobre reinicio
-        info_subframe = tk.Frame(lang_frame, bg=ModernTheme.COLORS['pastel_yellow'])
+        info_subframe = ttk.Frame(lang_frame)
         info_subframe.pack(fill=tk.X, pady=(10, 0))
 
-        tk.Label(info_subframe, text=t('settings_restart_required', 'gui'),
-                bg=ModernTheme.COLORS['pastel_yellow'],
-                fg=ModernTheme.COLORS['info'],
-                font=ModernTheme.FONTS['small']).pack(anchor=tk.W)
+        ttk.Label(info_subframe, text=t('settings_restart_required', 'gui'),
+                 foreground=ModernTheme.COLORS['info'],
+                 font=ModernTheme.FONTS['small']).pack(anchor=tk.W)
 
-        # Información del sistema - Frame azul pastel
-        system_info_frame = ttk.LabelFrame(main, text=t('info_system', 'gui'),
-                                          padding=15, style='Blue.TLabelframe')
+        # Información del sistema - Frame blanco simple
+        system_info_frame = ttk.LabelFrame(main, text=t('info_system', 'gui'), padding=15)
         system_info_frame.pack(fill=tk.X)
 
-        tk.Label(system_info_frame, text=t('settings_version', 'gui'),
-                bg=ModernTheme.COLORS['pastel_blue'],
-                fg=ModernTheme.COLORS['text_primary'],
-                font=ModernTheme.FONTS['body']).pack(anchor=tk.W, pady=5)
+        ttk.Label(system_info_frame, text=t('settings_version', 'gui'),
+                 foreground=ModernTheme.COLORS['text_primary'],
+                 font=ModernTheme.FONTS['body']).pack(anchor=tk.W, pady=5)
 
-        tk.Label(system_info_frame, text=t('settings_python_version', 'gui', version=sys.version.split()[0]),
-                bg=ModernTheme.COLORS['pastel_blue'],
-                fg=ModernTheme.COLORS['text_primary'],
-                font=ModernTheme.FONTS['body']).pack(anchor=tk.W, pady=5)
+        ttk.Label(system_info_frame, text=t('settings_python_version', 'gui', version=sys.version.split()[0]),
+                 foreground=ModernTheme.COLORS['text_primary'],
+                 font=ModernTheme.FONTS['body']).pack(anchor=tk.W, pady=5)
 
         # Idioma actual
         current_lang = get_translator().language
         lang_name = t('settings_language_spanish', 'gui') if current_lang == "es" else t('settings_language_english', 'gui')
-        tk.Label(system_info_frame, text=t('settings_current_language', 'gui', language=lang_name),
-                bg=ModernTheme.COLORS['pastel_blue'],
-                fg=ModernTheme.COLORS['text_primary'],
-                font=ModernTheme.FONTS['body']).pack(anchor=tk.W, pady=5)
+        ttk.Label(system_info_frame, text=t('settings_current_language', 'gui', language=lang_name),
+                 foreground=ModernTheme.COLORS['text_primary'],
+                 font=ModernTheme.FONTS['body']).pack(anchor=tk.W, pady=5)
 
     def load_user_settings(self):
         """Carga las preferencias del usuario desde config/user_settings.json"""
