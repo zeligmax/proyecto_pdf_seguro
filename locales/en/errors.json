@@ -1,0 +1,46 @@
+{
+  "file_not_found": "❌ File not found: {path}",
+  "file_not_encrypted": "❌ File is not a valid encrypted file",
+  "file_corrupted": "❌ File is corrupted or damaged",
+  "file_access_denied": "❌ Access denied to file: {path}",
+  "file_already_exists": "❌ File already exists: {path}",
+
+  "invalid_key": "❌ Invalid or unauthorized user key",
+  "key_empty": "❌ Key cannot be empty",
+  "key_unauthorized": "❌ User key not authorized for this file",
+
+  "user_not_authorized": "❌ System user does not match authorized user",
+  "user_verification_failed": "❌ Error in system user verification",
+  "user_mismatch": "❌ User '{current}' does not match authorized user '{authorized}'",
+
+  "encryption_failed": "❌ Error encrypting file: {error}",
+  "decryption_failed": "❌ Error decrypting file: {error}",
+
+  "invalid_format": "❌ Unsupported file format: {format}",
+  "unsupported_format": "❌ Format {format} is not supported",
+
+  "metadata_error": "❌ Error reading file metadata",
+  "metadata_corrupted": "❌ File metadata is corrupted",
+
+  "config_error": "❌ System configuration error: {error}",
+  "init_error": "❌ Error initializing system: {error}",
+
+  "network_error": "❌ Network error: {error}",
+  "timeout_error": "❌ Timeout expired",
+
+  "unknown_error": "❌ Unknown error: {error}",
+  "generic_error": "❌ An error has occurred",
+
+  "path_empty": "❌ Path cannot be empty",
+  "path_invalid": "❌ Invalid path: {path}",
+
+  "permission_denied": "❌ Permission denied",
+  "operation_cancelled": "⚠️ Operation cancelled by user",
+
+  "no_users_authorized": "❌ No authorized users for this file",
+  "user_already_exists": "⚠️ User already exists in authorized list",
+  "user_not_found": "❌ User not found",
+
+  "log_error": "❌ Error accessing logs: {error}",
+  "log_not_found": "⚠️ No log records found"
+}

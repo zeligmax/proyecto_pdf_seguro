@@ -1,0 +1,70 @@
+{
+  "banner": "📁 FILE SECURE v3.1 - Sistema de Cifrado de Archivos Seguros",
+  "subtitle": "Soporta: PDF, DOCX, XLSX, TXT, PBIP, PBIX",
+  "separator": "=",
+
+  "menu_title": "🔐 MENÚ PRINCIPAL",
+  "menu_option_1": "1️⃣  Cifrar archivo",
+  "menu_option_2": "2️⃣  Descifrar archivo",
+  "menu_option_3": "3️⃣  Ver información de archivo cifrado",
+  "menu_option_4": "4️⃣  Ver archivo en memoria (sin guardar)",
+  "menu_option_5": "5️⃣  Gestionar usuarios autorizados",
+  "menu_option_6": "6️⃣  Ver logs del sistema",
+  "menu_option_7": "7️⃣  Ayuda",
+  "menu_option_0": "0️⃣  Salir",
+
+  "prompt_select_option": "Selecciona una opción",
+  "prompt_file_path": "Ruta del archivo",
+  "prompt_output_path": "Ruta de salida (Enter para auto)",
+  "prompt_user_key": "Clave de usuario",
+  "prompt_continue": "Presiona Enter para continuar",
+
+  "help_title": "📖 CÓMO USAR FILE SECURE v3.1",
+  "help_section_encrypt": "🔒 CIFRAR UN ARCHIVO",
+  "help_encrypt_step1": "1. Selecciona la opción 'Cifrar archivo' del menú",
+  "help_encrypt_step2": "2. Introduce la ruta del archivo a cifrar",
+  "help_encrypt_step3": "3. Introduce las claves de los usuarios autorizados",
+  "help_encrypt_step4": "4. El archivo se cifrará con extensión .enc",
+
+  "help_section_decrypt": "🔓 DESCIFRAR UN ARCHIVO",
+  "help_decrypt_step1": "1. Selecciona la opción 'Descifrar archivo' del menú",
+  "help_decrypt_step2": "2. Introduce la ruta del archivo .enc",
+  "help_decrypt_step3": "3. Introduce tu clave de usuario",
+  "help_decrypt_step4": "4. El archivo se descifrará con su nombre original",
+
+  "help_section_view": "👁️ VER ARCHIVO EN MEMORIA",
+  "help_view_step1": "1. Selecciona la opción 'Ver archivo en memoria'",
+  "help_view_step2": "2. Introduce la ruta del archivo .enc",
+  "help_view_step3": "3. Introduce tu clave de usuario",
+  "help_view_step4": "4. El archivo se mostrará SIN guardarse en disco",
+
+  "help_section_formats": "📁 FORMATOS SOPORTADOS",
+  "help_formats_list": "PDF, DOCX, XLSX, TXT, PBIP, PBIX",
+
+  "help_section_security": "🔐 SEGURIDAD",
+  "help_security_encryption": "• Cifrado AES-256 con Fernet",
+  "help_security_2fa": "• Autenticación de dos factores (clave + usuario SO)",
+  "help_security_memory": "• Visualización en memoria sin guardar en disco",
+  "help_security_metadata": "• Metadatos cifrados",
+
+  "current_user": "👤 Usuario actual del sistema: {username}",
+
+  "encrypting": "🔒 Cifrando archivo...",
+  "decrypting": "🔓 Descifrando archivo...",
+  "loading": "⏳ Cargando...",
+
+  "success_encrypt": "✅ Archivo cifrado exitosamente: {filename}",
+  "success_decrypt": "✅ Archivo descifrado exitosamente: {filename}",
+  "success_view": "✅ Archivo cargado en memoria: {filename}",
+
+  "file_info_title": "📄 INFORMACIÓN DEL ARCHIVO CIFRADO",
+  "file_info_name": "Nombre original: {filename}",
+  "file_info_size": "Tamaño: {size} bytes",
+  "file_info_users": "Usuarios autorizados: {users}",
+  "file_info_date": "Fecha: {date}",
+
+  "goodbye": "👋 ¡Hasta pronto!",
+  "invalid_option": "❌ Opción inválida. Intenta de nuevo.",
+
+  "press_enter": "Presiona Enter para continuar..."
+}

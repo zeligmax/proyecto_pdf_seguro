@@ -1,0 +1,40 @@
+{
+  "app_name": "File Secure",
+  "app_version": "v3.1",
+  "app_title": "File Secure v3.1",
+  "app_description": "Sistema de cifrado de archivos seguros con autenticación por usuario",
+
+  "yes": "Sí",
+  "no": "No",
+  "ok": "OK",
+  "cancel": "Cancelar",
+  "accept": "Aceptar",
+  "close": "Cerrar",
+  "save": "Guardar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "add": "Añadir",
+  "remove": "Quitar",
+  "back": "Volver",
+  "next": "Siguiente",
+  "finish": "Finalizar",
+
+  "success": "Éxito",
+  "error": "Error",
+  "warning": "Advertencia",
+  "info": "Información",
+
+  "file": "Archivo",
+  "folder": "Carpeta",
+  "path": "Ruta",
+  "size": "Tamaño",
+  "name": "Nombre",
+  "date": "Fecha",
+
+  "user": "Usuario",
+  "password": "Contraseña",
+  "key": "Clave",
+
+  "supported_formats": "Formatos soportados: PDF, DOCX, XLSX, TXT, PBIP, PBIX",
+  "bytes": "bytes"
+}

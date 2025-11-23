@@ -30,15 +30,21 @@ from user_auth import UserAuthManager
 from pdf_utils_v2 import FileSecureManager
 from ip_check import IPChecker
 from api_manager import get_api_manager
+from i18n import init_translator, get_translator, t
 
 class PDFSecureGUI:
     def __init__(self):
+        # Inicializar traductor con idioma guardado
+        self.load_user_settings()
+        saved_lang = self.user_settings.get('language', 'es')
+        init_translator(saved_lang)
+
         # Crear ventana PRIMERO
         self.root = tk.Tk()
         self.root.title("File Secure v3.1 - Multi-formato")
         self.root.geometry("900x700")
         self.root.minsize(800, 600)
-        
+
         # Variables
         self.pdf_path_var = tk.StringVar()
         self.output_path_var = tk.StringVar()
@@ -48,7 +54,8 @@ class PDFSecureGUI:
         self.ip_var = tk.StringVar()
         self.ip_desc_var = tk.StringVar()
         self.log_limit_var = tk.StringVar(value="50")
-        
+        self.language_var = tk.StringVar(value=saved_lang)
+
         # Inicializar atributos del backend como None
         self.config = None
         self.auth_manager = None
@@ -101,7 +108,7 @@ class PDFSecureGUI:
         # Notebook
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-        
+
         # Crear pestañas
         self.create_encrypt_tab()
         self.create_decrypt_tab()
@@ -109,6 +116,7 @@ class PDFSecureGUI:
         self.create_ips_tab()
         self.create_logs_tab()
         self.create_api_tab()
+        self.create_settings_tab()
         
         # Barra de estado
         self.status_frame = ttk.Frame(self.root)
@@ -122,58 +130,58 @@ class PDFSecureGUI:
     
     def create_encrypt_tab(self):
         frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="🔒 Cifrar")
+        self.notebook.add(frame, text=t('tab_encrypt', 'gui'))
         
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        ttk.Label(main, text="🔒 Cifrar Archivo", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+        ttk.Label(main, text=t('header_encrypt', 'gui'), font=('Arial', 14, 'bold')).pack(pady=(0, 20))
 
         # Archivo a cifrar
-        pdf_frame = ttk.LabelFrame(main, text="📄 Archivo a cifrar", padding=10)
+        pdf_frame = ttk.LabelFrame(main, text=t('label_file_to_encrypt', 'gui'), padding=10)
         pdf_frame.pack(fill=tk.X, pady=(0, 10))
         pdf_entry = ttk.Frame(pdf_frame)
         pdf_entry.pack(fill=tk.X)
         ttk.Entry(pdf_entry, textvariable=self.pdf_path_var).pack(side=tk.LEFT, fill=tk.X, expand=True)
-        ttk.Button(pdf_entry, text="Examinar", command=self.browse_pdf).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Label(pdf_frame, text="ℹ️ Formatos soportados: PDF, DOCX, XLSX, TXT, PBIP, PBIX",
+        ttk.Button(pdf_entry, text=t('button_browse', 'gui'), command=self.browse_pdf).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Label(pdf_frame, text=t('info_supported_formats', 'gui'),
                  foreground='gray', font=('Arial', 9)).pack(anchor=tk.W, pady=(5, 0))
-        
+
         # Salida
-        out_frame = ttk.LabelFrame(main, text="💾 Salida", padding=10)
+        out_frame = ttk.LabelFrame(main, text=t('label_output', 'gui'), padding=10)
         out_frame.pack(fill=tk.X, pady=(0, 10))
         out_entry = ttk.Frame(out_frame)
         out_entry.pack(fill=tk.X)
         ttk.Entry(out_entry, textvariable=self.output_path_var).pack(side=tk.LEFT, fill=tk.X, expand=True)
-        ttk.Button(out_entry, text="Examinar", command=self.browse_output).pack(side=tk.RIGHT, padx=(5, 0))
-        
+        ttk.Button(out_entry, text=t('button_browse', 'gui'), command=self.browse_output).pack(side=tk.RIGHT, padx=(5, 0))
+
         # Usuarios
-        users_frame = ttk.LabelFrame(main, text="👥 Usuarios", padding=10)
+        users_frame = ttk.LabelFrame(main, text=t('label_users', 'gui'), padding=10)
         users_frame.pack(fill=tk.X, pady=(0, 10))
-        ttk.Label(users_frame, text="Nombres separados por comas:").pack(anchor=tk.W)
+        ttk.Label(users_frame, text=t('label_users_comma_separated', 'gui')).pack(anchor=tk.W)
         ttk.Entry(users_frame, textvariable=self.users_var).pack(fill=tk.X, pady=(5, 0))
         
         # Botones
         btn_frame = ttk.Frame(main)
         btn_frame.pack(fill=tk.X, pady=10)
-        ttk.Button(btn_frame, text="🔒 Cifrar", command=self.encrypt_pdf).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame, text="🧹 Limpiar", command=self.clear_encrypt).pack(side=tk.LEFT)
+        ttk.Button(btn_frame, text=t('button_encrypt', 'gui'), command=self.encrypt_pdf).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text=t('button_clear', 'gui'), command=self.clear_encrypt).pack(side=tk.LEFT)
         
         # Resultados
-        res_frame = ttk.LabelFrame(main, text="🔑 Claves", padding=10)
+        res_frame = ttk.LabelFrame(main, text=t('label_keys_section', 'gui'), padding=10)
         res_frame.pack(fill=tk.BOTH, expand=True)
         self.encrypt_results = scrolledtext.ScrolledText(res_frame, height=10)
         self.encrypt_results.pack(fill=tk.BOTH, expand=True)
-        ttk.Button(res_frame, text="📋 Copiar", command=self.copy_results).pack(pady=(5, 0))
+        ttk.Button(res_frame, text=t('button_copy', 'gui'), command=self.copy_results).pack(pady=(5, 0))
     
     def create_decrypt_tab(self):
         frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="🔓 Descifrar")
+        self.notebook.add(frame, text=t('tab_decrypt', 'gui'))
         
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        ttk.Label(main, text="🔓 Descifrar Archivo", font=('Arial', 14, 'bold')).pack(pady=(0, 10))
+
+        ttk.Label(main, text=t('header_decrypt', 'gui'), font=('Arial', 14, 'bold')).pack(pady=(0, 10))
 
         # Mostrar usuario actual del sistema
         import getpass
@@ -188,21 +196,21 @@ class PDFSecureGUI:
 
         user_info_frame = ttk.Frame(main)
         user_info_frame.pack(fill=tk.X, pady=(0, 10))
-        ttk.Label(user_info_frame, text=f"👤 Usuario del sistema: {current_user}",
+        ttk.Label(user_info_frame, text=t('label_current_user', 'gui', username=current_user),
                  foreground='blue', font=('Arial', 10)).pack(anchor=tk.W)
-        ttk.Label(user_info_frame, text="ℹ️ Solo podrás descifrar archivos autorizados para este usuario",
+        ttk.Label(user_info_frame, text=t('info_only_decrypt_authorized', 'gui'),
                  foreground='gray', font=('Arial', 9)).pack(anchor=tk.W)
 
         # Cifrado
-        enc_frame = ttk.LabelFrame(main, text="🔒 Archivo Cifrado", padding=10)
+        enc_frame = ttk.LabelFrame(main, text=t('label_encrypted_file_section', 'gui'), padding=10)
         enc_frame.pack(fill=tk.X, pady=(0, 10))
         enc_entry = ttk.Frame(enc_frame)
         enc_entry.pack(fill=tk.X)
         ttk.Entry(enc_entry, textvariable=self.encrypted_path_var).pack(side=tk.LEFT, fill=tk.X, expand=True)
-        ttk.Button(enc_entry, text="Examinar", command=self.browse_encrypted).pack(side=tk.RIGHT, padx=(5, 0))
-        
+        ttk.Button(enc_entry, text=t('button_browse', 'gui'), command=self.browse_encrypted).pack(side=tk.RIGHT, padx=(5, 0))
+
         # Clave
-        key_frame = ttk.LabelFrame(main, text="🔑 Clave", padding=10)
+        key_frame = ttk.LabelFrame(main, text=t('label_key_section', 'gui'), padding=10)
         key_frame.pack(fill=tk.X, pady=(0, 10))
         key_entry = ttk.Entry(key_frame, textvariable=self.user_key_var, show="*")
         key_entry.pack(fill=tk.X)
@@ -213,116 +221,116 @@ class PDFSecureGUI:
         # Botones
         btn_frame = ttk.Frame(main)
         btn_frame.pack(fill=tk.X, pady=20)
-        ttk.Button(btn_frame, text="👁️ Ver Archivo", command=self.view_pdf, width=15).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame, text="🔓 Descifrar y Guardar", command=self.decrypt_pdf, width=20).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame, text="🧹 Limpiar", command=self.clear_decrypt).pack(side=tk.LEFT)
+        ttk.Button(btn_frame, text=t('button_view', 'gui'), command=self.view_pdf, width=15).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text=t('button_decrypt', 'gui'), command=self.decrypt_pdf, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text=t('button_clear', 'gui'), command=self.clear_decrypt).pack(side=tk.LEFT)
 
         self.decrypt_status = ttk.Label(main, text="")
         self.decrypt_status.pack()
     
     def create_users_tab(self):
         frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="👥 Usuarios")
+        self.notebook.add(frame, text=t('tab_users', 'gui'))
         
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        ttk.Label(main, text="👥 Gestión de Usuarios", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
-        
+
+        ttk.Label(main, text=t('header_users', 'gui'), font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
         # Controles
         ctrl = ttk.Frame(main)
         ctrl.pack(fill=tk.X, pady=(0, 10))
-        ttk.Button(ctrl, text="🔄 Actualizar", command=self.refresh_users).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(ctrl, text="🧹 Limpiar", command=self.cleanup_keys).pack(side=tk.LEFT)
-        
+        ttk.Button(ctrl, text=t('button_refresh', 'gui'), command=self.refresh_users).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(ctrl, text=t('button_cleanup', 'gui'), command=self.cleanup_keys).pack(side=tk.LEFT)
+
         # Lista
-        list_frame = ttk.LabelFrame(main, text="🔑 Claves Activas", padding=10)
+        list_frame = ttk.LabelFrame(main, text=t('info_active_keys', 'gui'), padding=10)
         list_frame.pack(fill=tk.BOTH, expand=True)
         
-        cols = ("Usuario", "Archivo", "Creada", "Expira", "Accesos")
+        cols = (t('column_user', 'gui'), t('column_file', 'gui'), t('column_created', 'gui'), t('column_expires', 'gui'), t('column_accesses', 'gui'))
         self.users_tree = ttk.Treeview(list_frame, columns=cols, show="headings", height=12)
         for col in cols:
             self.users_tree.heading(col, text=col)
             self.users_tree.column(col, width=120)
-        
+
         scroll_v = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.users_tree.yview)
         self.users_tree.configure(yscrollcommand=scroll_v.set)
-        
+
         self.users_tree.grid(row=0, column=0, sticky="nsew")
         scroll_v.grid(row=0, column=1, sticky="ns")
         list_frame.grid_rowconfigure(0, weight=1)
         list_frame.grid_columnconfigure(0, weight=1)
-        
+
         # Acciones
         actions = ttk.Frame(main)
         actions.pack(fill=tk.X, pady=(10, 0))
-        ttk.Button(actions, text="❌ Revocar", command=self.revoke_key).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(actions, text="⏰ Extender", command=self.extend_key).pack(side=tk.LEFT)
+        ttk.Button(actions, text=t('button_revoke', 'gui'), command=self.revoke_key).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(actions, text=t('button_extend', 'gui'), command=self.extend_key).pack(side=tk.LEFT)
         
         self.refresh_users()
     
     def create_ips_tab(self):
         frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="🌐 IPs")
+        self.notebook.add(frame, text=t('tab_ips', 'gui'))
         
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        ttk.Label(main, text="🌐 Gestión de IPs", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
-        
+
+        ttk.Label(main, text=t('header_ips', 'gui'), font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
         # Info - se actualizará después
-        info_frame = ttk.LabelFrame(main, text="ℹ️ Info Actual", padding=10)
+        info_frame = ttk.LabelFrame(main, text=t('info_current_ip', 'gui'), padding=10)
         info_frame.pack(fill=tk.X, pady=(0, 10))
-        
+
         # Guardar referencia para actualizar después
-        self.ip_info_label1 = ttk.Label(info_frame, text="🖥️ IP: Cargando...")
+        self.ip_info_label1 = ttk.Label(info_frame, text=t('ip_info_loading', 'gui'))
         self.ip_info_label1.pack(anchor=tk.W)
-        self.ip_info_label2 = ttk.Label(info_frame, text="🏠 Host: Cargando...")
+        self.ip_info_label2 = ttk.Label(info_frame, text=t('ip_info_loading', 'gui'))
         self.ip_info_label2.pack(anchor=tk.W)
-        
+
         # Agregar
-        add_frame = ttk.LabelFrame(main, text="➕ Agregar IP", padding=10)
+        add_frame = ttk.LabelFrame(main, text=t('info_add_ip', 'gui'), padding=10)
         add_frame.pack(fill=tk.X, pady=(0, 10))
-        
+
         ip_entry = ttk.Frame(add_frame)
         ip_entry.pack(fill=tk.X, pady=(0, 5))
-        ttk.Label(ip_entry, text="IP:").pack(side=tk.LEFT)
+        ttk.Label(ip_entry, text=t('label_ip', 'gui')).pack(side=tk.LEFT)
         ttk.Entry(ip_entry, textvariable=self.ip_var, width=15).pack(side=tk.LEFT, padx=(5, 10))
-        
+
         # Botón que se actualizará después
-        self.btn_add_current_ip = ttk.Button(ip_entry, text="➕ Actual", command=self.add_current_ip)
+        self.btn_add_current_ip = ttk.Button(ip_entry, text=t('button_add_current_ip', 'gui'), command=self.add_current_ip)
         self.btn_add_current_ip.pack(side=tk.LEFT)
-        
+
         desc_entry = ttk.Frame(add_frame)
         desc_entry.pack(fill=tk.X, pady=(0, 5))
-        ttk.Label(desc_entry, text="Descripción:").pack(side=tk.LEFT)
+        ttk.Label(desc_entry, text=t('label_description', 'gui')).pack(side=tk.LEFT)
         ttk.Entry(desc_entry, textvariable=self.ip_desc_var, width=30).pack(side=tk.LEFT, padx=(5, 0), fill=tk.X, expand=True)
-        
-        ttk.Button(add_frame, text="➕ Agregar", command=self.add_ip).pack()
-        
+
+        ttk.Button(add_frame, text=t('button_add_ip', 'gui'), command=self.add_ip).pack()
+
         # Lista
-        list_frame = ttk.LabelFrame(main, text="📋 IPs Autorizadas", padding=10)
+        list_frame = ttk.LabelFrame(main, text=t('info_authorized_ips', 'gui'), padding=10)
         list_frame.pack(fill=tk.BOTH, expand=True)
         
-        ip_cols = ("IP", "Descripción", "Agregada", "Accesos", "Último")
+        ip_cols = (t('column_ip', 'gui'), t('column_description', 'gui'), t('column_added', 'gui'), t('column_accesses', 'gui'), t('column_last_access', 'gui'))
         self.ips_tree = ttk.Treeview(list_frame, columns=ip_cols, show="headings", height=10)
         for col in ip_cols:
             self.ips_tree.heading(col, text=col)
             self.ips_tree.column(col, width=120)
-        
+
         scroll_v = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=self.ips_tree.yview)
         self.ips_tree.configure(yscrollcommand=scroll_v.set)
-        
+
         self.ips_tree.grid(row=0, column=0, sticky="nsew")
         scroll_v.grid(row=0, column=1, sticky="ns")
         list_frame.grid_rowconfigure(0, weight=1)
         list_frame.grid_columnconfigure(0, weight=1)
-        
+
         # Acciones
         actions = ttk.Frame(main)
         actions.pack(fill=tk.X, pady=(10, 0))
-        ttk.Button(actions, text="🔄 Actualizar", command=self.refresh_ips).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(actions, text="❌ Eliminar", command=self.remove_ip).pack(side=tk.LEFT)
+        ttk.Button(actions, text=t('button_refresh', 'gui'), command=self.refresh_ips).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(actions, text=t('button_remove_ip', 'gui'), command=self.remove_ip).pack(side=tk.LEFT)
     
     def add_current_ip(self):
         """Agrega la IP actual al campo"""
@@ -349,22 +357,22 @@ class PDFSecureGUI:
     
     def create_logs_tab(self):
         frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="📊 Logs")
+        self.notebook.add(frame, text=t('tab_logs', 'gui'))
         
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        ttk.Label(main, text="📊 Logs de Acceso", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
-        
+
+        ttk.Label(main, text=t('header_logs', 'gui'), font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
         # Controles
         ctrl = ttk.Frame(main)
         ctrl.pack(fill=tk.X, pady=(0, 10))
-        ttk.Button(ctrl, text="🔄 Actualizar", command=self.refresh_logs).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Label(ctrl, text="Mostrar:").pack(side=tk.LEFT, padx=(10, 5))
+        ttk.Button(ctrl, text=t('button_refresh', 'gui'), command=self.refresh_logs).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(ctrl, text=t('label_show_limit', 'gui')).pack(side=tk.LEFT, padx=(10, 5))
         ttk.Combobox(ctrl, textvariable=self.log_limit_var, values=["25", "50", "100"], width=8).pack(side=tk.LEFT)
-        
+
         # Logs
-        logs_frame = ttk.LabelFrame(main, text="📄 Registro", padding=10)
+        logs_frame = ttk.LabelFrame(main, text=t('info_logs', 'gui'), padding=10)
         logs_frame.pack(fill=tk.BOTH, expand=True)
         self.logs_text = scrolledtext.ScrolledText(logs_frame, height=20, font=('Courier', 9))
         self.logs_text.pack(fill=tk.BOTH, expand=True)
@@ -374,45 +382,45 @@ class PDFSecureGUI:
     def create_api_tab(self):
         """Crea la pestaña de gestión de la API de Usuarios"""
         frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="🔍 API")
+        self.notebook.add(frame, text=t('tab_api', 'gui'))
 
         main = ttk.Frame(frame)
         main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        ttk.Label(main, text="🔍 API de Detección de Usuarios", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+        ttk.Label(main, text=t('header_api', 'gui'), font=('Arial', 14, 'bold')).pack(pady=(0, 20))
 
         # Estado de la API
-        status_frame = ttk.LabelFrame(main, text="📡 Estado del Servidor", padding=15)
+        status_frame = ttk.LabelFrame(main, text=t('info_api_status', 'gui'), padding=15)
         status_frame.pack(fill=tk.X, pady=(0, 15))
 
-        self.api_status_label = ttk.Label(status_frame, text="⭕ DETENIDA", font=('Arial', 12, 'bold'))
+        self.api_status_label = ttk.Label(status_frame, text=t('api_status_stopped', 'gui'), font=('Arial', 12, 'bold'))
         self.api_status_label.pack(anchor=tk.W, pady=(0, 5))
 
-        self.api_url_label = ttk.Label(status_frame, text="URL: N/A")
+        self.api_url_label = ttk.Label(status_frame, text=t('api_url_na', 'gui'))
         self.api_url_label.pack(anchor=tk.W, pady=(0, 5))
 
         self.api_health_label = ttk.Label(status_frame, text="")
         self.api_health_label.pack(anchor=tk.W)
 
         # Controles
-        controls_frame = ttk.LabelFrame(main, text="⚙️ Controles", padding=15)
+        controls_frame = ttk.LabelFrame(main, text=t('info_api_controls', 'gui'), padding=15)
         controls_frame.pack(fill=tk.X, pady=(0, 15))
 
         btn_frame = ttk.Frame(controls_frame)
         btn_frame.pack(fill=tk.X)
 
-        ttk.Button(btn_frame, text="▶️ Iniciar API", command=self.start_api, width=20).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame, text="⏹️ Detener API", command=self.stop_api, width=20).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame, text="🔄 Actualizar Estado", command=self.refresh_api_status, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text=t('button_start_api', 'gui'), command=self.start_api, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text=t('button_stop_api', 'gui'), command=self.stop_api, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame, text=t('button_refresh_status', 'gui'), command=self.refresh_api_status, width=20).pack(side=tk.LEFT, padx=(0, 10))
 
         btn_frame2 = ttk.Frame(controls_frame)
         btn_frame2.pack(fill=tk.X, pady=(10, 0))
 
-        ttk.Button(btn_frame2, text="🌐 Abrir en Navegador", command=self.open_api_browser, width=20).pack(side=tk.LEFT, padx=(0, 10))
-        ttk.Button(btn_frame2, text="👥 Listar Usuarios", command=self.list_system_users, width=20).pack(side=tk.LEFT)
+        ttk.Button(btn_frame2, text=t('button_open_browser', 'gui'), command=self.open_api_browser, width=20).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(btn_frame2, text=t('button_list_users', 'gui'), command=self.list_system_users, width=20).pack(side=tk.LEFT)
 
         # Lista de usuarios del sistema
-        users_frame = ttk.LabelFrame(main, text="👥 Usuarios del Sistema", padding=15)
+        users_frame = ttk.LabelFrame(main, text=t('info_system_users', 'gui'), padding=15)
         users_frame.pack(fill=tk.BOTH, expand=True)
 
         self.system_users_text = scrolledtext.ScrolledText(users_frame, height=15, font=('Courier', 10))
@@ -422,37 +430,138 @@ class PDFSecureGUI:
         info_frame = ttk.Frame(main)
         info_frame.pack(fill=tk.X, pady=(10, 0))
 
-        ttk.Label(info_frame, text="💡 La API permite detectar usuarios del sistema operativo",
+        ttk.Label(info_frame, text=t('info_api_description', 'gui'),
                  foreground='blue').pack(anchor=tk.W)
 
         # Actualizar estado inicial
         self.refresh_api_status()
 
+    def create_settings_tab(self):
+        """Crea la pestaña de configuración con opciones de idioma"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text=t('tab_settings', 'gui'))
+
+        main = ttk.Frame(frame)
+        main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        ttk.Label(main, text=t('header_settings', 'gui'), font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
+        # Sección de idioma
+        lang_frame = ttk.LabelFrame(main, text=t('info_language_section', 'gui'), padding=15)
+        lang_frame.pack(fill=tk.X, pady=(0, 15))
+
+        ttk.Label(lang_frame, text=t('settings_language_select', 'gui')).pack(anchor=tk.W, pady=(0, 10))
+
+        # Dropdown de idiomas
+        lang_selector_frame = ttk.Frame(lang_frame)
+        lang_selector_frame.pack(fill=tk.X, pady=(0, 10))
+
+        language_options = [
+            (t('settings_language_spanish', 'gui'), "es"),
+            (t('settings_language_english', 'gui'), "en")
+        ]
+
+        for lang_name, lang_code in language_options:
+            ttk.Radiobutton(
+                lang_selector_frame,
+                text=lang_name,
+                variable=self.language_var,
+                value=lang_code,
+                command=self.on_language_change
+            ).pack(anchor=tk.W, pady=2)
+
+        # Info sobre reinicio
+        info_frame = ttk.Frame(lang_frame)
+        info_frame.pack(fill=tk.X, pady=(10, 0))
+
+        ttk.Label(info_frame, text=t('settings_restart_required', 'gui'),
+                 foreground='blue', font=('Arial', 9)).pack(anchor=tk.W)
+
+        # Información del sistema
+        info_frame = ttk.LabelFrame(main, text=t('info_system', 'gui'), padding=15)
+        info_frame.pack(fill=tk.X, pady=(0, 15))
+
+        ttk.Label(info_frame, text=t('settings_version', 'gui'), font=('Arial', 10)).pack(anchor=tk.W, pady=2)
+        ttk.Label(info_frame, text=t('settings_python_version', 'gui', version=sys.version.split()[0]), font=('Arial', 10)).pack(anchor=tk.W, pady=2)
+
+        # Idioma actual
+        current_lang = get_translator().language
+        lang_name = t('settings_language_spanish', 'gui') if current_lang == "es" else t('settings_language_english', 'gui')
+        ttk.Label(info_frame, text=t('settings_current_language', 'gui', language=lang_name), font=('Arial', 10)).pack(anchor=tk.W, pady=2)
+
+    def load_user_settings(self):
+        """Carga las preferencias del usuario desde config/user_settings.json"""
+        settings_file = Path(__file__).parent.parent / 'config' / 'user_settings.json'
+
+        if settings_file.exists():
+            try:
+                import json
+                with open(settings_file, 'r', encoding='utf-8') as f:
+                    self.user_settings = json.load(f)
+            except Exception:
+                self.user_settings = {'language': 'es'}
+        else:
+            self.user_settings = {'language': 'es'}
+
+    def save_user_settings(self):
+        """Guarda las preferencias del usuario en config/user_settings.json"""
+        settings_file = Path(__file__).parent.parent / 'config' / 'user_settings.json'
+
+        # Crear directorio si no existe
+        settings_file.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            import json
+            with open(settings_file, 'w', encoding='utf-8') as f:
+                json.dump(self.user_settings, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Error guardando configuración: {e}")
+
+    def on_language_change(self):
+        """Maneja el cambio de idioma"""
+        new_lang = self.language_var.get()
+
+        # Guardar preferencia
+        self.user_settings['language'] = new_lang
+        self.save_user_settings()
+
+        # Cambiar idioma del traductor
+        get_translator().change_language(new_lang)
+
+        # Mostrar mensaje
+        title = t('language_updated_title', 'gui')
+        message = t('language_updated_message', 'gui')
+
+        messagebox.showinfo(title, message)
+
+        # Actualizar status
+        self.status_label.config(text=f"✅ {t('status_language_updated', 'gui')}")
+
     # Métodos de archivos
     def browse_pdf(self):
         f = filedialog.askopenfilename(
-            title="Seleccionar Archivo",
+            title=t('select_file_to_encrypt', 'gui'),
             filetypes=[
-                ("Archivos soportados", "*.pdf *.docx *.xlsx *.txt *.pbip *.pbix"),
-                ("PDF", "*.pdf"),
-                ("Word", "*.docx"),
-                ("Excel", "*.xlsx"),
-                ("Texto", "*.txt"),
-                ("Power BI", "*.pbip *.pbix"),
-                ("Todos", "*.*")
+                (t('file_types_supported', 'gui'), "*.pdf *.docx *.xlsx *.txt *.pbip *.pbix"),
+                (t('file_types_pdf', 'gui'), "*.pdf"),
+                (t('file_types_word', 'gui'), "*.docx"),
+                (t('file_types_excel', 'gui'), "*.xlsx"),
+                (t('file_types_text', 'gui'), "*.txt"),
+                (t('file_types_powerbi', 'gui'), "*.pbip *.pbix"),
+                (t('file_types_all', 'gui'), "*.*")
             ]
         )
         if f:
             self.pdf_path_var.set(f)
             self.output_path_var.set(str(Path(f).with_suffix('.enc')))
-    
+
     def browse_output(self):
-        f = filedialog.asksaveasfilename(defaultextension=".enc", filetypes=[("Cifrado", "*.enc")])
+        f = filedialog.asksaveasfilename(defaultextension=".enc", filetypes=[(t('file_types_encrypted', 'gui'), "*.enc")])
         if f:
             self.output_path_var.set(f)
-    
+
     def browse_encrypted(self):
-        f = filedialog.askopenfilename(filetypes=[("Cifrado", "*.enc"), ("JSON", "*.json")])
+        f = filedialog.askopenfilename(filetypes=[(t('file_types_encrypted', 'gui'), "*.enc"), (t('file_types_json', 'gui'), "*.json")])
         if f:
             self.encrypted_path_var.set(f)
     

@@ -1,0 +1,40 @@
+{
+  "app_name": "File Secure",
+  "app_version": "v3.1",
+  "app_title": "File Secure v3.1",
+  "app_description": "Secure file encryption system with user authentication",
+
+  "yes": "Yes",
+  "no": "No",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "accept": "Accept",
+  "close": "Close",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "remove": "Remove",
+  "back": "Back",
+  "next": "Next",
+  "finish": "Finish",
+
+  "success": "Success",
+  "error": "Error",
+  "warning": "Warning",
+  "info": "Information",
+
+  "file": "File",
+  "folder": "Folder",
+  "path": "Path",
+  "size": "Size",
+  "name": "Name",
+  "date": "Date",
+
+  "user": "User",
+  "password": "Password",
+  "key": "Key",
+
+  "supported_formats": "Supported formats: PDF, DOCX, XLSX, TXT, PBIP, PBIX",
+  "bytes": "bytes"
+}

@@ -1,0 +1,46 @@
+{
+  "file_not_found": "❌ Archivo no encontrado: {path}",
+  "file_not_encrypted": "❌ El archivo no es un archivo cifrado válido",
+  "file_corrupted": "❌ El archivo está corrupto o dañado",
+  "file_access_denied": "❌ Acceso denegado al archivo: {path}",
+  "file_already_exists": "❌ El archivo ya existe: {path}",
+
+  "invalid_key": "❌ Clave de usuario incorrecta o no autorizada",
+  "key_empty": "❌ La clave no puede estar vacía",
+  "key_unauthorized": "❌ Clave de usuario no autorizada para este archivo",
+
+  "user_not_authorized": "❌ Usuario del sistema no coincide con el usuario autorizado",
+  "user_verification_failed": "❌ Error en la verificación de usuario del sistema",
+  "user_mismatch": "❌ El usuario '{current}' no coincide con el usuario autorizado '{authorized}'",
+
+  "encryption_failed": "❌ Error al cifrar el archivo: {error}",
+  "decryption_failed": "❌ Error al descifrar el archivo: {error}",
+
+  "invalid_format": "❌ Formato de archivo no soportado: {format}",
+  "unsupported_format": "❌ El formato {format} no está soportado",
+
+  "metadata_error": "❌ Error al leer los metadatos del archivo",
+  "metadata_corrupted": "❌ Los metadatos del archivo están corruptos",
+
+  "config_error": "❌ Error en la configuración del sistema: {error}",
+  "init_error": "❌ Error al inicializar el sistema: {error}",
+
+  "network_error": "❌ Error de red: {error}",
+  "timeout_error": "❌ Tiempo de espera agotado",
+
+  "unknown_error": "❌ Error desconocido: {error}",
+  "generic_error": "❌ Ha ocurrido un error",
+
+  "path_empty": "❌ La ruta no puede estar vacía",
+  "path_invalid": "❌ Ruta inválida: {path}",
+
+  "permission_denied": "❌ Permiso denegado",
+  "operation_cancelled": "⚠️ Operación cancelada por el usuario",
+
+  "no_users_authorized": "❌ No hay usuarios autorizados para este archivo",
+  "user_already_exists": "⚠️ El usuario ya existe en la lista de autorizados",
+  "user_not_found": "❌ Usuario no encontrado",
+
+  "log_error": "❌ Error al acceder a los logs: {error}",
+  "log_not_found": "⚠️ No se encontraron registros de logs"
+}
