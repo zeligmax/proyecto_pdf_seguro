@@ -42,7 +42,7 @@ class PDFSecureGUI:
 
         # Crear ventana PRIMERO
         self.root = tk.Tk()
-        self.root.title("📁 File Secure v3.1 - Modern Edition")
+        self.root.title("📁 File Secure v3.1")
         self.root.geometry("1100x750")
         self.root.minsize(1000, 650)
 
