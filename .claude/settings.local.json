@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if exist \"app\\routes\" rmdir /s /q \"app\\routes\")",
+      "Bash(if exist \"app\\static\" rmdir /s /q \"app\\static\")",
+      "Bash(if exist \"app\\templates\" rmdir /s /q \"app\\templates\")",
+      "Bash(tree:*)",
+      "Bash(python -m app.scripts.init_data:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

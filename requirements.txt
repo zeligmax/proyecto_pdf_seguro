@@ -1,24 +1,123 @@
-cryptography>=41.0.0
+# ============================================================
+# File Secure v3.2 - Enterprise Edition
+# Dependencies for multi-tenancy, RBAC, and dashboard
+# ============================================================
+
+# Core dependencies (v3.1)
+cryptography>=42.0.0
 requests>=2.31.0
+<<<<<<< Updated upstream
 flask>=2.3.3
 pathlib
 tkinter; platform_system == "Windows"
 pyinstaller; sys_platform == "win32"
+=======
+PyMuPDF>=1.23.0
+Pillow>=10.0.0
+>>>>>>> Stashed changes
 
-#Notes:
+# Web Framework
+Flask>=3.0.0
+Flask-CORS>=4.0.0
+Flask-SQLAlchemy>=3.1.1
+Flask-Migrate>=4.0.5
+Flask-JWT-Extended>=4.6.0
 
-#cryptography: Used for PDF encryption/decryption with Fernet (AES-based).
+# Database
+SQLAlchemy>=2.0.23
+psycopg2-binary>=2.9.9        # PostgreSQL driver
+alembic>=1.13.1               # Database migrations
 
-#requests: Used to fetch public IP and send logs to the server.
+# Redis (optional - for caching and sessions)
+redis>=5.0.1
+hiredis>=2.3.2                # Faster Redis parser
 
+<<<<<<< Updated upstream
 #flask: Needed if you want to run the included remote server (server/server.py).
+=======
+# Task Queue (optional - for async operations)
+celery>=5.3.4
 
-#tkinter: Used for the GUI. It comes pre-installed with most Python distributions, but added for completeness (platform-specific).
+# Data Validation & Serialization
+pydantic>=2.5.3
+marshmallow>=3.20.1
 
-#pyinstaller: Optional. Used only if you want to compile the GUI into a .exe or .app.
+# Authentication & Security
+python-jose[cryptography]>=3.3.0  # JWT tokens
+passlib>=1.7.4                    # Password hashing
+bcrypt>=4.1.2
 
-#How to use it:
+# Configuration
+PyYAML>=6.0.1
 
-#With your virtual environment activated:
+# Logging & Monitoring
+elasticsearch>=8.11.1         # Optional - centralized logging
+python-json-logger>=2.0.7
+>>>>>>> Stashed changes
 
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Development & Testing
+pytest>=7.4.3
+pytest-cov>=4.1.0
+black>=23.12.1                # Code formatting
+flake8>=7.0.0                 # Linting
+
+# ============================================================
+# Platform-specific (installed automatically on Windows)
+# ============================================================
+# pywin32 - Windows-specific library for better user detection
+# tkinter - GUI library (comes pre-installed with Python)
+
+# ============================================================
+# Optional dependencies
+# ============================================================
+# pyinstaller - To compile the app into a standalone executable
+# gunicorn - Production WSGI server for Flask (Linux/Unix)
+# waitress - Production WSGI server for Flask (Windows)
+
+<<<<<<< Updated upstream
 #pip install -r requirements.txt
+=======
+# ============================================================
+# Installation instructions
+# ============================================================
+#
+# Basic installation (with PostgreSQL):
+#   pip install -r requirements.txt
+#
+# With Redis (recommended for production):
+#   pip install -r requirements.txt redis hiredis
+#
+# With Elasticsearch (for centralized logging):
+#   pip install -r requirements.txt elasticsearch
+#
+# Development installation (includes testing tools):
+#   pip install -r requirements.txt pytest pytest-cov black flake8
+#
+# Production server (Linux):
+#   pip install -r requirements.txt gunicorn
+#
+# Production server (Windows):
+#   pip install -r requirements.txt waitress
+#
+# ============================================================
+# Notes
+# ============================================================
+#
+# PostgreSQL Setup:
+#   - Install PostgreSQL server
+#   - Create database: CREATE DATABASE filesecure_v3;
+#   - Set environment variable: FILESECURE_DATABASE_URL=postgresql://user:pass@localhost/filesecure_v3
+#
+# Redis Setup (optional):
+#   - Install Redis server
+#   - Set environment variable: FILESECURE_REDIS_HOST=localhost
+#
+# SQLite Fallback:
+#   - If no DATABASE_URL is set, SQLite will be used by default
+#   - Location: ~/.pdf_secure/filesecure_v3.db
+#
+>>>>>>> Stashed changes
