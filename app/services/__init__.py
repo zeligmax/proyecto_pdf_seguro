@@ -9,6 +9,7 @@ from app.services.rbac_service import RBACService
 from app.services.org_service import OrganizationService
 from app.services.policy_service import PolicyService
 from app.services.audit_service import AuditService
+from app.services.file_service import FileService
 
 __all__ = [
     'AuthenticationService',
@@ -16,4 +17,5 @@ __all__ = [
     'OrganizationService',
     'PolicyService',
     'AuditService',
+    'FileService',
 ]

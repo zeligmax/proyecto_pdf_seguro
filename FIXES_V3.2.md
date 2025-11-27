@@ -1,4 +1,6 @@
-# File Secure v3.2 - Resumen de Correcciones
+# File Secure v3.2 - Resumen de Correcciones y Mejoras
+
+**Última actualización:** 2025-01-27
 
 ## ✅ Problemas Resueltos
 
@@ -195,6 +197,135 @@ Si encuentras algún problema:
 
 ---
 
-**¡File Secure v3.2 está listo para usar!** 🎉
+## 🆕 Nuevas Funcionalidades Agregadas
 
-Todos los conflictos de Git han sido resueltos y la aplicación está completamente funcional con la nueva arquitectura v3.2.
+### FileService - Servicio de Cifrado/Descifrado Integrado
+
+**Archivo creado:** `app/services/file_service.py`
+
+Se ha creado un servicio completo de cifrado y descifrado de archivos que integra:
+- ✅ Cifrado AES-256 (Fernet) compatible con v2.0
+- ✅ Sistema de claves por usuario
+- ✅ Integración con RBAC y permisos
+- ✅ Auditoría automática de todas las operaciones
+- ✅ Registro en base de datos (modelo SecureFile)
+- ✅ Control de acceso granular (modelo FileAccess)
+
+**Características principales:**
+- `encrypt_file()` - Cifra archivos y genera claves únicas por usuario
+- `decrypt_file()` - Descifra archivos con validación de permisos
+- `list_user_files()` - Lista archivos accesibles por el usuario
+- `revoke_access()` - Revoca acceso de usuarios a archivos
+
+### GUI v3.2 Completa - 7 Pestañas Funcionales
+
+**Archivo actualizado:** `app/gui_v32.py`
+
+La GUI ahora incluye todas las funcionalidades necesarias:
+
+#### 1. 📊 Dashboard (ya existía)
+- Información del usuario
+- Estadísticas del sistema
+- Roles y permisos
+
+#### 2. 🔒 Cifrar Archivo (NUEVA)
+- Selección de archivo a cifrar (cualquier tipo)
+- Configuración de archivo de salida
+- Usuarios autorizados (separados por comas)
+- Generación automática de claves por usuario
+- Visualización y copia de claves generadas
+- Operación en thread separado (no bloquea la UI)
+
+#### 3. 🔓 Descifrar Archivo (NUEVA)
+- Selección de archivo cifrado
+- Ingreso de clave de usuario (oculta por defecto)
+- Configuración de archivo de salida
+- Verificación automática de permisos
+- Registro en auditoría
+- Operación en thread separado
+
+#### 4. 📁 Mis Archivos (NUEVA)
+- Lista de archivos cifrados accesibles
+- Información: nombre, tamaño, fecha, usuario que cifró
+- Botón de actualización
+- Interfaz tipo tabla (TreeView)
+
+#### 5. 📋 Logs (NUEVA)
+- Visualización de últimos 50 logs de auditoría
+- Filtrado por usuario actual
+- Detalles de cada acción realizada
+- Botón de actualización en tiempo real
+
+#### 6. ℹ️ Info (ya existía)
+- Información de File Secure v3.2
+- Características y roles del sistema
+
+#### 7. 🔌 API REST (ya existía)
+- Instrucciones para la API
+- Ejemplos de uso
+
+### Integraciones Completadas
+
+1. **Auditoría Automática**
+   - Cada cifrado/descifrado se registra en `audit_log`
+   - Incluye timestamp, usuario, acción, estado, detalles
+
+2. **Control de Acceso**
+   - Validación de permisos antes de descifrar
+   - Solo usuarios autorizados pueden acceder
+   - Registro de todos los accesos
+
+3. **Gestión de Sesiones**
+   - FileService usa la sesión de SQLAlchemy
+   - Integración perfecta con el sistema de usuarios
+
+4. **Threading**
+   - Operaciones de cifrado/descifrado en hilos separados
+   - UI no se bloquea durante operaciones largas
+   - Feedback en barra de estado
+
+---
+
+## 📁 Archivos Nuevos Creados
+
+- `app/services/file_service.py` - Servicio de cifrado/descifrado v3.2
+- Modificado: `app/services/__init__.py` - Export de FileService
+- Modificado: `app/gui_v32.py` - GUI completa con 7 pestañas
+- Modificado: `requirements.txt` - Limpiado de conflictos Git
+
+---
+
+## 🎯 Estado Actual del Proyecto
+
+### ✅ Completamente Funcional
+
+**Backend (Arquitectura v3.2):**
+- ✅ Multi-tenancy (organizaciones y departamentos)
+- ✅ RBAC completo (roles y permisos)
+- ✅ Autenticación y sesiones
+- ✅ Auditoría centralizada
+- ✅ Políticas configurables
+- ✅ Base de datos (SQLite/PostgreSQL)
+- ✅ **FileService - Cifrado/Descifrado integrado**
+
+**Frontend (GUI v3.2):**
+- ✅ Login con validación
+- ✅ Dashboard con información del usuario
+- ✅ **Cifrado de archivos con claves por usuario**
+- ✅ **Descifrado de archivos con validación**
+- ✅ **Gestión de archivos cifrados**
+- ✅ **Visualización de logs de auditoría**
+- ✅ Información del sistema
+- ✅ Guía de API REST
+
+**Compatibilidad:**
+- ✅ Mantiene lógica de cifrado de v2.0 (Fernet/AES-256)
+- ✅ Sistema de claves por usuario (compatible)
+- ✅ Nueva arquitectura empresarial v3.2
+- ✅ Auditoría y permisos integrados
+
+---
+
+**¡File Secure v3.2 está completamente funcional!** 🎉
+
+Todos los conflictos de Git han sido resueltos, las funcionalidades de cifrado/descifrado han sido integradas, y la aplicación combina lo mejor de v2.0 (funcionalidad) con la arquitectura empresarial de v3.2.

@@ -7,14 +7,17 @@ Interfaz gráfica básica para File Secure v3.2
 import os
 import sys
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog, scrolledtext
+from tkinter.scrolledtext import ScrolledText
 from pathlib import Path
+import threading
 
 # Agregar directorio al path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.core.database import get_db_manager
 from app.core.config import get_config_manager
+from app.services.file_service import FileService
 from sqlalchemy.orm import Session
 
 
@@ -174,10 +177,25 @@ class MainWindow:
 
         self.root = tk.Tk()
         self.root.title(f"File Secure v3.2 - {user.username}")
-        self.root.geometry("900x600")
+        self.root.geometry("1000x700")
 
         # Configurar cierre
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # Variables para cifrado/descifrado
+        self.file_path_var = tk.StringVar()
+        self.output_path_var = tk.StringVar()
+        self.users_var = tk.StringVar()
+        self.encrypted_path_var = tk.StringVar()
+        self.user_key_var = tk.StringVar()
+        self.decrypt_output_var = tk.StringVar()
+
+        # Inicializar FileService
+        try:
+            self.file_service = FileService(self.session, self.user)
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo inicializar FileService:\n{str(e)}\n\nAsegúrate de configurar PDF_SECURE_MASTER_KEY")
+            self.file_service = None
 
         self.create_widgets()
 
@@ -216,6 +234,11 @@ class MainWindow:
 
         # Crear pestañas
         self.create_dashboard_tab()
+        if self.file_service:  # Solo si FileService se inicializó correctamente
+            self.create_encrypt_tab()
+            self.create_decrypt_tab()
+            self.create_files_tab()
+        self.create_logs_tab()
         self.create_info_tab()
         self.create_api_tab()
 
@@ -403,6 +426,405 @@ Para funciones avanzadas, usa la API REST:
             text="📋 Copiar comando de inicio de API",
             command=lambda: self.copy_to_clipboard("python run_api_v32.py")
         ).pack(side=tk.LEFT)
+
+    def create_encrypt_tab(self):
+        """Pestaña de cifrado de archivos"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="🔒 Cifrar Archivo")
+
+        main_frame = ttk.Frame(frame, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(
+            main_frame,
+            text="🔒 Cifrar Archivo con Claves de Usuario",
+            font=('Arial', 14, 'bold')
+        ).pack(pady=(0, 20))
+
+        # Archivo a cifrar
+        file_frame = ttk.LabelFrame(main_frame, text="📄 Archivo a Cifrar", padding=10)
+        file_frame.pack(fill=tk.X, pady=(0, 10))
+
+        file_entry_frame = ttk.Frame(file_frame)
+        file_entry_frame.pack(fill=tk.X)
+        ttk.Entry(file_entry_frame, textvariable=self.file_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(file_entry_frame, text="Examinar", command=self.browse_file_to_encrypt).pack(side=tk.RIGHT, padx=(5, 0))
+
+        # Archivo de salida (opcional)
+        output_frame = ttk.LabelFrame(main_frame, text="💾 Archivo de Salida (Opcional)", padding=10)
+        output_frame.pack(fill=tk.X, pady=(0, 10))
+
+        output_entry_frame = ttk.Frame(output_frame)
+        output_entry_frame.pack(fill=tk.X)
+        ttk.Entry(output_entry_frame, textvariable=self.output_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(output_entry_frame, text="Examinar", command=self.browse_output_file).pack(side=tk.RIGHT, padx=(5, 0))
+
+        # Usuarios autorizados
+        users_frame = ttk.LabelFrame(main_frame, text="👥 Usuarios Autorizados", padding=10)
+        users_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(users_frame, text="Ingresa los nombres de usuario separados por comas:").pack(anchor=tk.W)
+        ttk.Entry(users_frame, textvariable=self.users_var, width=50).pack(fill=tk.X, pady=(5, 0))
+        ttk.Label(users_frame, text="Ejemplo: usuario1, usuario2, admin", font=('Arial', 9), foreground='gray').pack(anchor=tk.W, pady=(2, 0))
+
+        # Botones
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=20)
+        ttk.Button(buttons_frame, text="🔒 Cifrar Archivo", command=self.encrypt_file).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(buttons_frame, text="🧹 Limpiar", command=self.clear_encrypt_fields).pack(side=tk.LEFT)
+
+        # Resultados
+        results_frame = ttk.LabelFrame(main_frame, text="🔑 Claves Generadas", padding=10)
+        results_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        self.encrypt_results = ScrolledText(results_frame, height=10, wrap=tk.WORD)
+        self.encrypt_results.pack(fill=tk.BOTH, expand=True)
+        ttk.Button(results_frame, text="📋 Copiar Claves", command=self.copy_encryption_results).pack(pady=(5, 0))
+
+    def create_decrypt_tab(self):
+        """Pestaña de descifrado de archivos"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="🔓 Descifrar Archivo")
+
+        main_frame = ttk.Frame(frame, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(
+            main_frame,
+            text="🔓 Descifrar Archivo con Clave de Usuario",
+            font=('Arial', 14, 'bold')
+        ).pack(pady=(0, 20))
+
+        # Archivo cifrado
+        encrypted_frame = ttk.LabelFrame(main_frame, text="🔒 Archivo Cifrado", padding=10)
+        encrypted_frame.pack(fill=tk.X, pady=(0, 10))
+        encrypted_entry_frame = ttk.Frame(encrypted_frame)
+        encrypted_entry_frame.pack(fill=tk.X)
+        ttk.Entry(encrypted_entry_frame, textvariable=self.encrypted_path_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(encrypted_entry_frame, text="Examinar", command=self.browse_encrypted_file).pack(side=tk.RIGHT, padx=(5, 0))
+
+        # Clave de usuario
+        key_frame = ttk.LabelFrame(main_frame, text="🔑 Clave de Usuario", padding=10)
+        key_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Entry(key_frame, textvariable=self.user_key_var, width=50, show="*").pack(fill=tk.X)
+        ttk.Button(key_frame, text="👁️ Mostrar/Ocultar", command=self.toggle_key_visibility).pack(pady=(5, 0))
+
+        # Archivo de salida
+        decrypt_output_frame = ttk.LabelFrame(main_frame, text="💾 Archivo de Salida (Opcional)", padding=10)
+        decrypt_output_frame.pack(fill=tk.X, pady=(0, 10))
+        decrypt_output_entry_frame = ttk.Frame(decrypt_output_frame)
+        decrypt_output_entry_frame.pack(fill=tk.X)
+        ttk.Entry(decrypt_output_entry_frame, textvariable=self.decrypt_output_var, width=50).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(decrypt_output_entry_frame, text="Examinar", command=self.browse_decrypt_output).pack(side=tk.RIGHT, padx=(5, 0))
+
+        # Botones
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=20)
+        ttk.Button(buttons_frame, text="🔓 Descifrar Archivo", command=self.decrypt_file).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(buttons_frame, text="🧹 Limpiar", command=self.clear_decrypt_fields).pack(side=tk.LEFT)
+
+        # Resultado
+        result_frame = ttk.LabelFrame(main_frame, text="📄 Resultado", padding=10)
+        result_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        self.decrypt_results = ScrolledText(result_frame, height=10, wrap=tk.WORD)
+        self.decrypt_results.pack(fill=tk.BOTH, expand=True)
+
+    def create_files_tab(self):
+        """Pestaña de gestión de archivos"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="📁 Mis Archivos")
+
+        main_frame = ttk.Frame(frame, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(
+            main_frame,
+            text="📁 Gestión de Archivos Cifrados",
+            font=('Arial', 14, 'bold')
+        ).pack(pady=(0, 20))
+
+        # Botones de acción
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Button(buttons_frame, text="🔄 Actualizar Lista", command=self.refresh_files_list).pack(side=tk.LEFT, padx=(0, 10))
+
+        # Lista de archivos
+        list_frame = ttk.LabelFrame(main_frame, text="Archivos Accesibles", padding=10)
+        list_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Treeview con scrollbar
+        tree_scroll = ttk.Scrollbar(list_frame)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.files_tree = ttk.Treeview(
+            list_frame,
+            columns=('filename', 'size', 'date', 'users'),
+            show='headings',
+            yscrollcommand=tree_scroll.set
+        )
+        tree_scroll.config(command=self.files_tree.yview)
+
+        self.files_tree.heading('filename', text='Archivo')
+        self.files_tree.heading('size', text='Tamaño')
+        self.files_tree.heading('date', text='Fecha de Cifrado')
+        self.files_tree.heading('users', text='Cifrado por')
+
+        self.files_tree.column('filename', width=300)
+        self.files_tree.column('size', width=100)
+        self.files_tree.column('date', width=150)
+        self.files_tree.column('users', width=150)
+
+        self.files_tree.pack(fill=tk.BOTH, expand=True)
+
+        # Cargar archivos al inicio
+        self.refresh_files_list()
+
+    def create_logs_tab(self):
+        """Pestaña de logs de auditoría"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="📋 Logs")
+
+        main_frame = ttk.Frame(frame, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(
+            main_frame,
+            text="📋 Logs de Auditoría",
+            font=('Arial', 14, 'bold')
+        ).pack(pady=(0, 20))
+
+        # Botones de acción
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Button(buttons_frame, text="🔄 Actualizar Logs", command=self.refresh_logs).pack(side=tk.LEFT)
+
+        # Logs
+        logs_frame = ttk.LabelFrame(main_frame, text="Últimos 50 Logs", padding=10)
+        logs_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.logs_text = ScrolledText(logs_frame, wrap=tk.WORD, font=('Courier', 9))
+        self.logs_text.pack(fill=tk.BOTH, expand=True)
+
+        # Cargar logs al inicio
+        self.refresh_logs()
+
+    # Métodos auxiliares para cifrado
+    def browse_file_to_encrypt(self):
+        filename = filedialog.askopenfilename(
+            title="Seleccionar archivo a cifrar",
+            filetypes=[("Todos los archivos", "*.*"), ("PDF", "*.pdf"), ("Word", "*.docx"), ("Excel", "*.xlsx")]
+        )
+        if filename:
+            self.file_path_var.set(filename)
+
+    def browse_output_file(self):
+        filename = filedialog.asksaveasfilename(
+            title="Guardar archivo cifrado como",
+            defaultextension=".encrypted",
+            filetypes=[("Archivo cifrado", "*.encrypted"), ("Todos los archivos", "*.*")]
+        )
+        if filename:
+            self.output_path_var.set(filename)
+
+    def browse_encrypted_file(self):
+        filename = filedialog.askopenfilename(
+            title="Seleccionar archivo cifrado",
+            filetypes=[("Archivo cifrado", "*.encrypted"), ("Todos los archivos", "*.*")]
+        )
+        if filename:
+            self.encrypted_path_var.set(filename)
+
+    def browse_decrypt_output(self):
+        filename = filedialog.asksaveasfilename(
+            title="Guardar archivo descifrado como",
+            filetypes=[("Todos los archivos", "*.*")]
+        )
+        if filename:
+            self.decrypt_output_var.set(filename)
+
+    def toggle_key_visibility(self):
+        """Alternar visibilidad de la clave"""
+        # Este método necesitaría una referencia al Entry widget
+        # Por ahora solo muestra un mensaje
+        messagebox.showinfo("Info", "Copia y pega la clave desde el portapapeles")
+
+    def clear_encrypt_fields(self):
+        """Limpiar campos de cifrado"""
+        self.file_path_var.set("")
+        self.output_path_var.set("")
+        self.users_var.set("")
+        self.encrypt_results.delete('1.0', tk.END)
+
+    def clear_decrypt_fields(self):
+        """Limpiar campos de descifrado"""
+        self.encrypted_path_var.set("")
+        self.user_key_var.set("")
+        self.decrypt_output_var.set("")
+        self.decrypt_results.delete('1.0', tk.END)
+
+    def encrypt_file(self):
+        """Cifrar archivo"""
+        file_path = self.file_path_var.get().strip()
+        output_path = self.output_path_var.get().strip() or None
+        users_str = self.users_var.get().strip()
+
+        if not file_path:
+            messagebox.showerror("Error", "Selecciona un archivo a cifrar")
+            return
+
+        if not users_str:
+            messagebox.showerror("Error", "Ingresa al menos un usuario autorizado")
+            return
+
+        # Parsear usuarios
+        authorized_users = [u.strip() for u in users_str.split(',') if u.strip()]
+
+        def encrypt_worker():
+            try:
+                self.status_label.config(text="Cifrando archivo...")
+                secure_file, user_keys = self.file_service.encrypt_file(
+                    file_path=file_path,
+                    authorized_usernames=authorized_users,
+                    output_path=output_path
+                )
+
+                # Mostrar resultados
+                result_text = f"✅ Archivo cifrado exitosamente\n\n"
+                result_text += f"Archivo: {secure_file.original_filename}\n"
+                result_text += f"Ubicación: {secure_file.file_path}\n\n"
+                result_text += "🔑 CLAVES DE USUARIO (guárdalas de forma segura):\n"
+                result_text += "=" * 60 + "\n\n"
+
+                for username, key in user_keys.items():
+                    result_text += f"Usuario: {username}\n"
+                    result_text += f"Clave: {key}\n"
+                    result_text += "-" * 60 + "\n\n"
+
+                result_text += "\n⚠️ IMPORTANTE: Guarda estas claves de forma segura.\n"
+                result_text += "Sin la clave, no será posible descifrar el archivo."
+
+                self.encrypt_results.delete('1.0', tk.END)
+                self.encrypt_results.insert('1.0', result_text)
+                self.status_label.config(text="Archivo cifrado correctamente")
+
+                messagebox.showinfo("Éxito", "Archivo cifrado correctamente")
+
+            except Exception as e:
+                self.status_label.config(text="Error al cifrar archivo")
+                messagebox.showerror("Error", f"No se pudo cifrar el archivo:\n{str(e)}")
+
+        # Ejecutar en thread separado
+        thread = threading.Thread(target=encrypt_worker, daemon=True)
+        thread.start()
+
+    def decrypt_file(self):
+        """Descifrar archivo"""
+        encrypted_path = self.encrypted_path_var.get().strip()
+        user_key = self.user_key_var.get().strip()
+        output_path = self.decrypt_output_var.get().strip() or None
+
+        if not encrypted_path:
+            messagebox.showerror("Error", "Selecciona un archivo cifrado")
+            return
+
+        if not user_key:
+            messagebox.showerror("Error", "Ingresa la clave de usuario")
+            return
+
+        def decrypt_worker():
+            try:
+                self.status_label.config(text="Descifrando archivo...")
+                decrypted_path = self.file_service.decrypt_file(
+                    encrypted_path=encrypted_path,
+                    user_key=user_key,
+                    output_path=output_path,
+                    read_only=False
+                )
+
+                result_text = f"✅ Archivo descifrado exitosamente\n\n"
+                result_text += f"Ubicación: {decrypted_path}\n\n"
+                result_text += "El archivo ha sido descifrado y guardado correctamente."
+
+                self.decrypt_results.delete('1.0', tk.END)
+                self.decrypt_results.insert('1.0', result_text)
+                self.status_label.config(text="Archivo descifrado correctamente")
+
+                messagebox.showinfo("Éxito", f"Archivo descifrado en:\n{decrypted_path}")
+
+            except Exception as e:
+                self.status_label.config(text="Error al descifrar archivo")
+                messagebox.showerror("Error", f"No se pudo descifrar el archivo:\n{str(e)}")
+
+        # Ejecutar en thread separado
+        thread = threading.Thread(target=decrypt_worker, daemon=True)
+        thread.start()
+
+    def copy_encryption_results(self):
+        """Copiar resultados de cifrado al portapapeles"""
+        text = self.encrypt_results.get('1.0', tk.END)
+        if text.strip():
+            self.root.clipboard_clear()
+            self.root.clipboard_append(text)
+            messagebox.showinfo("Copiado", "Claves copiadas al portapapeles")
+
+    def refresh_files_list(self):
+        """Actualizar lista de archivos"""
+        if not self.file_service:
+            return
+
+        try:
+            # Limpiar tree
+            for item in self.files_tree.get_children():
+                self.files_tree.delete(item)
+
+            # Obtener archivos
+            files = self.file_service.list_user_files()
+
+            for file in files:
+                size_kb = file.encrypted_size / 1024 if file.encrypted_size else 0
+                size_str = f"{size_kb:.2f} KB"
+                date_str = file.created_at.strftime('%Y-%m-%d %H:%M') if file.created_at else 'N/A'
+
+                # Obtener usuario que cifró
+                from app.models.user import User
+                uploader = self.session.query(User).filter_by(id=file.uploaded_by).first()
+                uploader_name = uploader.username if uploader else 'N/A'
+
+                self.files_tree.insert('', 'end', values=(
+                    file.original_filename,
+                    size_str,
+                    date_str,
+                    uploader_name
+                ))
+
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo cargar la lista de archivos:\n{str(e)}")
+
+    def refresh_logs(self):
+        """Actualizar logs de auditoría"""
+        try:
+            from app.models.audit_log import AuditLog
+
+            # Obtener últimos 50 logs del usuario
+            logs = self.session.query(AuditLog).filter_by(
+                user_id=self.user.id
+            ).order_by(AuditLog.timestamp.desc()).limit(50).all()
+
+            log_text = ""
+            for log in logs:
+                log_text += f"[{log.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] "
+                log_text += f"{log.action} - {log.status}\n"
+                if log.details:
+                    log_text += f"  Detalles: {log.details}\n"
+                log_text += "-" * 80 + "\n"
+
+            if not log_text:
+                log_text = "No hay logs disponibles"
+
+            self.logs_text.delete('1.0', tk.END)
+            self.logs_text.insert('1.0', log_text)
+
+        except Exception as e:
+            self.logs_text.delete('1.0', tk.END)
+            self.logs_text.insert('1.0', f"Error al cargar logs:\n{str(e)}")
 
     def copy_to_clipboard(self, text):
         """Copiar texto al portapapeles"""
