@@ -1,14 +1,5 @@
 #!/usr/bin/env python3
 """
-<<<<<<< Updated upstream
-PDF Secure GUI - Version 2.0
-Interfaz gráfica para el sistema de PDFs seguros con autenticación por usuario.
-
-INSTRUCCIONES DE USO:
-1. Este archivo debe estar en la carpeta 'app/'
-2. Combina esta PARTE 1 con las PARTE 2, 3 y 4 en un solo archivo
-3. Ejecuta: python app/app_gui.py
-=======
 File Secure GUI - Version 3.2 Enterprise Edition
 Interfaz gráfica para el sistema de cifrado de archivos seguros
 Soporta múltiples formatos: PDF, DOCX, XLSX, TXT, PBIP, PBIX
@@ -19,7 +10,6 @@ Nuevas características v3.2:
 - Auditoría centralizada
 - Políticas configurables
 - Dashboard ejecutivo
->>>>>>> Stashed changes
 """
 
 import os
@@ -54,26 +44,15 @@ class PDFSecureGUI:
         
         # Crear ventana principal
         self.root = tk.Tk()
-<<<<<<< Updated upstream
-        self.root.title("PDF Secure v2.0 - Sistema de PDFs Seguros")
-        self.root.geometry("900x700")
-        self.root.minsize(800, 600)
-        
-        # Configurar estilo
-        self.style = ttk.Style()
-        self.style.theme_use('clam')
-        
-        # Variables de la interfaz
-=======
         self.root.title("📁 File Secure v3.2 Enterprise")
         self.root.geometry("1100x750")
         self.root.minsize(1000, 650)
 
-        # Aplicar tema moderno con colores pastel
-        ModernTheme.configure_style(self.root)
+        # Configurar estilo básico (ModernTheme no existe en este archivo)
+        self.style = ttk.Style()
+        self.style.theme_use('clam')
 
-        # Variables
->>>>>>> Stashed changes
+        # Variables de la interfaz
         self.pdf_path_var = tk.StringVar()
         self.output_path_var = tk.StringVar()
         self.encrypted_path_var = tk.StringVar()

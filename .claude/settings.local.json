@@ -5,7 +5,12 @@
       "Bash(if exist \"app\\static\" rmdir /s /q \"app\\static\")",
       "Bash(if exist \"app\\templates\" rmdir /s /q \"app\\templates\")",
       "Bash(tree:*)",
-      "Bash(python -m app.scripts.init_data:*)"
+      "Bash(python -m app.scripts.init_data:*)",
+      "Bash(git -C \"c:\\Users\\User\\Documents\\Max\\FileSecureManager\" checkout --theirs README.md)",
+      "Bash(python:*)",
+      "Bash(deactivate 2)",
+      "Bash($null)",
+      "Bash(Remove-Item -Recurse -Force .venv -ErrorAction SilentlyContinue)"
     ],
     "deny": [],
     "ask": []

@@ -1,13 +1,7 @@
-<<<<<<< Updated upstream
-# 📄 PDF Secure v2.0 - Guía Completa para Principiantes
-
-> Sistema de cifrado de PDFs con autenticación por usuario y control de acceso basado en IP local.
-=======
 # 📁 File Secure v3.2 Enterprise - Guía Completa
 
 > Sistema empresarial de cifrado de archivos con multi-tenancy, RBAC completo, auditoría centralizada y políticas configurables.
 > **Soporta múltiples formatos**: PDF, DOCX, XLSX, TXT, PBIP, PBIX
->>>>>>> Stashed changes
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -44,18 +38,6 @@ python run_api_v32.py
 
 ## 📖 **Tabla de Contenidos**
 
-<<<<<<< Updated upstream
-1. [¿Qué es PDF Secure?](#-qué-es-pdf-secure)
-2. [Características Principales](#-características-principales)
-3. [Requisitos del Sistema](#-requisitos-del-sistema)
-4. [Instalación Paso a Paso](#-instalación-paso-a-paso)
-5. [Configuración Inicial](#-configuración-inicial)
-6. [Cómo Usar el Programa](#-cómo-usar-el-programa)
-7. [Ejemplos Prácticos](#-ejemplos-prácticos)
-8. [Preguntas Frecuentes](#-preguntas-frecuentes)
-9. [Solución de Problemas](#-solución-de-problemas)
-10. [Seguridad y Buenas Prácticas](#-seguridad-y-buenas-prácticas)
-=======
 1. [¿Qué es File Secure?](#-qué-es-file-secure)
 2. [🆕 Novedades v3.2 Enterprise](#-novedades-v32-enterprise)
 3. [Características Principales](#-características-principales)
@@ -71,22 +53,11 @@ python run_api_v32.py
 13. [Solución de Problemas](#-solución-de-problemas)
 14. [Seguridad y Buenas Prácticas](#-seguridad-y-buenas-prácticas)
 15. [Migración desde v3.1](#-migración-desde-v31)
->>>>>>> Stashed changes
 
 ---
 
 ## 🤔 **¿Qué es PDF Secure?**
 
-<<<<<<< Updated upstream
-PDF Secure es un programa que te permite **proteger tus archivos PDF** para que solo personas autorizadas puedan abrirlos. 
-
-### **¿Cómo funciona?**
-
-1. **Tú cifras** un archivo PDF y especificas quién puede abrirlo
-2. El programa **genera claves únicas** para cada persona autorizada
-3. **Cada persona usa su clave** para descifrar y ver el PDF
-4. El sistema **registra quién accedió** y cuándo (auditoría completa)
-=======
 File Secure es un **sistema empresarial de cifrado de archivos** con arquitectura multi-tenant que permite a las organizaciones **proteger cualquier tipo de archivo** (PDF, DOCX, XLSX, TXT, PBIP, PBIX, y más) con control de acceso basado en roles, auditoría centralizada y políticas de seguridad configurables.
 
 ### **¿Cómo funciona?**
@@ -96,17 +67,9 @@ File Secure es un **sistema empresarial de cifrado de archivos** con arquitectur
 3. **Control de acceso granular** con 30+ permisos y 6 roles predefinidos
 4. El sistema **audita todas las acciones** en una base de datos centralizada
 5. **Políticas configurables** de contraseñas, sesiones, archivos, cifrado y acceso
->>>>>>> Stashed changes
 
 ### **¿Por qué usar v3.2 Enterprise?**
 
-<<<<<<< Updated upstream
-✅ Proteger documentos confidenciales  
-✅ Controlar quién puede ver tus PDFs  
-✅ Saber exactamente quién accedió a cada documento  
-✅ Las claves expiran automáticamente (seguridad temporal)  
-✅ No depende de contraseñas débiles  
-=======
 ✅ **Multi-tenancy**: Múltiples organizaciones aisladas en un solo sistema
 ✅ **RBAC completo**: 6 roles predefinidos + roles personalizados por empresa
 ✅ **Auditoría centralizada**: Logs de todas las acciones con búsqueda avanzada
@@ -195,23 +158,11 @@ File Secure v3.2 introduce una **transformación completa** hacia una arquitectu
 - ✅ **Preserva**: Claves de usuario, logs de acceso, IP whitelist
 - ✅ **Crea**: Organización/departamento por defecto
 - ✅ **Compatible**: Los archivos cifrados v3.1 funcionan en v3.2
->>>>>>> Stashed changes
 
 ---
 
 ## ✨ **Características Principales**
 
-<<<<<<< Updated upstream
-- 🔐 **Cifrado AES-256**: Nivel militar de seguridad
-- 👥 **Claves por Usuario**: Cada persona tiene su propia clave única
-- 🌐 **Control de IP Local**: Whitelist opcional de dispositivos autorizados
-- 📊 **Auditoría Completa**: Registro detallado de todos los accesos
-- ⏰ **Expiración Automática**: Las claves caducan después de 30 días (configurable)
-- 🖥️ **Dos Interfaces**: GUI amigable y CLI para expertos
-- 🔒 **Seguridad Mejorada**: Sin contraseñas hardcodeadas en el código
-
----
-=======
 ### **Características Empresariales (v3.2)**
 - 🏢 **Multi-Tenancy**: Organizaciones y departamentos aislados
 - 👥 **RBAC Completo**: 6 roles predefinidos + 30+ permisos granulares
@@ -498,7 +449,6 @@ File Secure es un sistema completo de cifrado de archivos que soporta múltiples
 
 ---
 
->>>>>>> Stashed changes
 
 ## 💻 **Requisitos del Sistema**
 
@@ -655,45 +605,16 @@ FileSecureManager/
 └── README.md
 ```
 
-<<<<<<< Updated upstream
-Si falta algún archivo, copia el código de los artifacts proporcionados.
-
----
-
-### **Paso 3: Instalar Dependencias**
-
-Abre una terminal en la carpeta del proyecto y ejecuta:
-
-**Windows:**
-```cmd
-pip install cryptography
-```
-
-**macOS/Linux:**
-```bash
-pip3 install cryptography
-```
-
-**O usando el archivo requirements.txt:**
-```bash
-=======
 #### **Paso 3: Instalar Dependencias**
 
 ```bash
 # Opción A: Todas las dependencias (recomendado)
->>>>>>> Stashed changes
 pip install -r requirements.txt
 
 # Opción B: Solo dependencias básicas
 pip install cryptography sqlalchemy psycopg2-binary flask pyjwt pyyaml
 ```
 
-<<<<<<< Updated upstream
-Espera a que termine la instalación. Verás algo como:
-```
-Successfully installed cryptography-41.0.7
-```
-=======
 **Dependencias principales instaladas:**
 - cryptography: Cifrado AES-256
 - sqlalchemy: ORM para base de datos
@@ -704,7 +625,6 @@ Successfully installed cryptography-41.0.7
 - PyMuPDF, Pillow: Visualizadores
 - marshmallow: Serialización
 - redis: Caché (opcional)
->>>>>>> Stashed changes
 
 ✅ ¡Listo! Ya tienes todo instalado.
 
@@ -1450,11 +1370,6 @@ Este proyecto está licenciado bajo la Licencia MIT. Ver archivo [LICENSE.md](LI
 
 ## 👨‍💻 **Autor**
 
-<<<<<<< Updated upstream
-**Desarrollado por**: Zeligmax  
-**Versión**: 2.0  
-**Fecha**: Enero 2025  
-=======
 **Desarrollado por**: Zeligmax
 **Versión**: 3.2 Enterprise Edition
 **Fecha**: Enero 2025
@@ -1490,7 +1405,6 @@ Este proyecto está licenciado bajo la Licencia MIT. Ver archivo [LICENSE.md](LI
 - 👥 **Claves por Usuario**: Sistema de permisos básico
 - 📊 **Logs de Acceso**: Auditoría básica
 - 🌐 **IP Whitelist**: Control de dispositivos
->>>>>>> Stashed changes
 
 ---
 
@@ -1509,22 +1423,13 @@ Agradecimientos especiales a todos los colaboradores y revisores técnicos que h
 git clone https://github.com/zeligmax/proyecto_pdf_seguro.git
 cd proyecto_pdf_seguro
 
-<<<<<<< Updated upstream
-# 2. Instala dependencias
-pip install cryptography
-=======
 # 2. Instalar dependencias
 pip install -r requirements.txt
->>>>>>> Stashed changes
 
 # 3. Configurar variables de entorno
 export PDF_SECURE_MASTER_KEY=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')
 export FILESECURE_SECRET_KEY=$PDF_SECURE_MASTER_KEY
 
-<<<<<<< Updated upstream
-# 4. ¡Inicia la aplicación!
-python3 app/app_gui.py
-=======
 # 4. Inicializar base de datos
 python -m app.scripts.init_data
 
@@ -1559,7 +1464,6 @@ python run_api_v32.py
 ```bash
 # Si ya usabas v3.1, migra tus datos automáticamente:
 python -m app.scripts.migrate_v31_to_v32
->>>>>>> Stashed changes
 ```
 
 ---
@@ -1585,13 +1489,9 @@ python -m app.scripts.migrate_v31_to_v32
 
 **Si este proyecto te resultó útil, ¡dale una ⭐ en GitHub!**
 
-<<<<<<< Updated upstream
-[⬆ Volver arriba](#-pdf-secure-v20---guía-completa-para-principiantes)
-=======
 ### **File Secure v3.2 Enterprise Edition**
 *Cifrado de archivos de nivel empresarial con multi-tenancy y RBAC*
 
 [⬆ Volver arriba](#-file-secure-v32-enterprise---guía-completa)
->>>>>>> Stashed changes
 
 </div>
