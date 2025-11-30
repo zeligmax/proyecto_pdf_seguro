@@ -217,11 +217,11 @@ Se ha creado un servicio completo de cifrado y descifrado de archivos que integr
 - `list_user_files()` - Lista archivos accesibles por el usuario
 - `revoke_access()` - Revoca acceso de usuarios a archivos
 
-### GUI v3.2 Completa - 7 Pestañas Funcionales
+### GUI v3.2 Completa - 8 Pestañas Funcionales
 
 **Archivo actualizado:** `app/gui_v32.py`
 
-La GUI ahora incluye todas las funcionalidades necesarias:
+La GUI ahora incluye todas las funcionalidades necesarias (8 pestañas completas):
 
 #### 1. 📊 Dashboard (ya existía)
 - Información del usuario
@@ -260,7 +260,18 @@ La GUI ahora incluye todas las funcionalidades necesarias:
 - Información de File Secure v3.2
 - Características y roles del sistema
 
-#### 7. 🔌 API REST (ya existía)
+#### 7. 👥 Usuarios (NUEVA - Solo para Administradores)
+- **Control de Acceso:** Solo visible para usuarios con permisos de gestión
+- Listar todos los usuarios de la organización
+- Crear nuevos usuarios con roles asignados
+- Editar usuarios existentes (email, nombre, estado)
+- Activar/Desactivar usuarios
+- Bloquear/Desbloquear usuarios
+- Cambiar contraseñas de usuarios
+- Asignar y remover roles
+- Auditoría automática de todas las operaciones
+
+#### 8. 🔌 API REST (ya existía)
 - Instrucciones para la API
 - Ejemplos de uso
 
@@ -314,6 +325,7 @@ La GUI ahora incluye todas las funcionalidades necesarias:
 - ✅ **Cifrado de archivos con claves por usuario**
 - ✅ **Descifrado de archivos con validación**
 - ✅ **Gestión de archivos cifrados**
+- ✅ **Gestión de usuarios y permisos (solo admins)**
 - ✅ **Visualización de logs de auditoría**
 - ✅ Información del sistema
 - ✅ Guía de API REST
@@ -328,4 +340,34 @@ La GUI ahora incluye todas las funcionalidades necesarias:
 
 **¡File Secure v3.2 está completamente funcional!** 🎉
 
-Todos los conflictos de Git han sido resueltos, las funcionalidades de cifrado/descifrado han sido integradas, y la aplicación combina lo mejor de v2.0 (funcionalidad) con la arquitectura empresarial de v3.2.
+Todos los conflictos de Git han sido resueltos, las funcionalidades de cifrado/descifrado han sido integradas, la gestión de usuarios y permisos está operativa, y la aplicación combina lo mejor de v2.0 (funcionalidad) con la arquitectura empresarial de v3.2.
+
+## 🆕 Nueva Funcionalidad Agregada (2025-01-27)
+
+### Pestaña de Gestión de Usuarios
+**Solo visible para usuarios con permisos de administración**
+
+Se ha agregado una pestaña completa para gestionar usuarios dentro de la organización:
+
+**Características:**
+- ✅ **Control de Acceso RBAC**: Solo usuarios con permisos `user.view`, `user.create`, `user.edit`, o `user.assign_roles` pueden ver esta pestaña
+- ✅ **Lista de Usuarios**: Visualiza todos los usuarios de la organización con su estado
+- ✅ **Crear Usuarios**: Formulario completo con validación de datos
+- ✅ **Editar Usuarios**: Modificar email, nombre completo, estado
+- ✅ **Gestión de Estado**: Activar/Desactivar y Bloquear/Desbloquear usuarios
+- ✅ **Cambio de Contraseñas**: Los admins pueden cambiar contraseñas de cualquier usuario
+- ✅ **Asignación de Roles**: Checkboxes para asignar/remover roles (SuperAdmin, OrgAdmin, Editor, Viewer, etc.)
+- ✅ **Auditoría Completa**: Todas las operaciones se registran en `audit_log`
+- ✅ **Validaciones**: Contraseñas mínimo 8 caracteres, verificación de usuarios duplicados
+- ✅ **Interfaz Intuitiva**: Doble click para editar, diálogos modales, feedback visual
+
+**Permisos verificados:**
+- `user.create` - Crear nuevos usuarios
+- `user.edit` - Editar usuarios existentes
+- `user.view` - Ver lista de usuarios
+- `user.assign_roles` - Asignar/remover roles
+
+**Usuarios que pueden acceder:**
+- SuperAdmin (tiene todos los permisos)
+- OrgAdmin (puede gestionar usuarios de su organización)
+- Cualquier usuario con roles personalizados que incluyan permisos de gestión de usuarios

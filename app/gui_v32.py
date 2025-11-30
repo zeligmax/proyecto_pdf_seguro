@@ -238,6 +238,9 @@ class MainWindow:
             self.create_encrypt_tab()
             self.create_decrypt_tab()
             self.create_files_tab()
+        # Pestaña de gestión de usuarios (solo para admins)
+        if self.can_manage_users():
+            self.create_users_tab()
         self.create_logs_tab()
         self.create_info_tab()
         self.create_api_tab()
@@ -825,6 +828,394 @@ Para funciones avanzadas, usa la API REST:
         except Exception as e:
             self.logs_text.delete('1.0', tk.END)
             self.logs_text.insert('1.0', f"Error al cargar logs:\n{str(e)}")
+
+    def can_manage_users(self):
+        """Verifica si el usuario puede gestionar usuarios"""
+        # Verificar si es admin
+        if self.user.is_admin:
+            return True
+
+        # Verificar permisos específicos
+        user_permissions = []
+        for role in self.user.roles:
+            for perm in role.permissions:
+                user_permissions.append(perm.name)
+
+        # Necesita al menos uno de estos permisos
+        required_permissions = ['user.view', 'user.create', 'user.edit', 'user.assign_roles']
+        return any(perm in user_permissions for perm in required_permissions)
+
+    def create_users_tab(self):
+        """Pestaña de gestión de usuarios"""
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="👥 Usuarios")
+
+        main_frame = ttk.Frame(frame, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(
+            main_frame,
+            text="👥 Gestión de Usuarios",
+            font=('Arial', 14, 'bold')
+        ).pack(pady=(0, 20))
+
+        # Botones de acción
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=(0, 10))
+
+        ttk.Button(buttons_frame, text="➕ Crear Usuario", command=self.create_new_user).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(buttons_frame, text="✏️ Editar Usuario", command=self.edit_selected_user).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(buttons_frame, text="🔄 Actualizar Lista", command=self.refresh_users_list).pack(side=tk.LEFT)
+
+        # Lista de usuarios
+        list_frame = ttk.LabelFrame(main_frame, text="Usuarios de la Organización", padding=10)
+        list_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Treeview con scrollbar
+        tree_scroll = ttk.Scrollbar(list_frame)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.users_tree = ttk.Treeview(
+            list_frame,
+            columns=('username', 'email', 'full_name', 'roles', 'status'),
+            show='headings',
+            yscrollcommand=tree_scroll.set
+        )
+        tree_scroll.config(command=self.users_tree.yview)
+
+        self.users_tree.heading('username', text='Usuario')
+        self.users_tree.heading('email', text='Email')
+        self.users_tree.heading('full_name', text='Nombre Completo')
+        self.users_tree.heading('roles', text='Roles')
+        self.users_tree.heading('status', text='Estado')
+
+        self.users_tree.column('username', width=150)
+        self.users_tree.column('email', width=200)
+        self.users_tree.column('full_name', width=200)
+        self.users_tree.column('roles', width=200)
+        self.users_tree.column('status', width=100)
+
+        self.users_tree.pack(fill=tk.BOTH, expand=True)
+
+        # Doble click para editar
+        self.users_tree.bind('<Double-1>', lambda e: self.edit_selected_user())
+
+        # Cargar usuarios al inicio
+        self.refresh_users_list()
+
+    def refresh_users_list(self):
+        """Actualizar lista de usuarios"""
+        try:
+            # Limpiar tree
+            for item in self.users_tree.get_children():
+                self.users_tree.delete(item)
+
+            # Obtener usuarios de la organización
+            from app.models.user import User
+            users = self.session.query(User).filter_by(
+                organization_id=self.user.organization_id
+            ).order_by(User.username).all()
+
+            for user in users:
+                roles_text = ", ".join([role.name for role in user.roles]) if user.roles else "Sin roles"
+
+                if user.is_locked:
+                    status = "🔒 Bloqueado"
+                elif not user.is_active:
+                    status = "❌ Inactivo"
+                else:
+                    status = "✅ Activo"
+
+                self.users_tree.insert('', 'end', values=(
+                    user.username,
+                    user.email or 'N/A',
+                    user.full_name or 'N/A',
+                    roles_text,
+                    status
+                ), tags=(user.id,))
+
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo cargar la lista de usuarios:\n{str(e)}")
+
+    def create_new_user(self):
+        """Crear nuevo usuario"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Crear Nuevo Usuario")
+        dialog.geometry("500x600")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        main_frame = ttk.Frame(dialog, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(main_frame, text="Crear Nuevo Usuario", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
+        # Username
+        ttk.Label(main_frame, text="Nombre de usuario *").pack(anchor=tk.W)
+        username_var = tk.StringVar()
+        ttk.Entry(main_frame, textvariable=username_var, width=40).pack(fill=tk.X, pady=(0, 10))
+
+        # Email
+        ttk.Label(main_frame, text="Email *").pack(anchor=tk.W)
+        email_var = tk.StringVar()
+        ttk.Entry(main_frame, textvariable=email_var, width=40).pack(fill=tk.X, pady=(0, 10))
+
+        # Full name
+        ttk.Label(main_frame, text="Nombre completo").pack(anchor=tk.W)
+        full_name_var = tk.StringVar()
+        ttk.Entry(main_frame, textvariable=full_name_var, width=40).pack(fill=tk.X, pady=(0, 10))
+
+        # Password
+        ttk.Label(main_frame, text="Contraseña *").pack(anchor=tk.W)
+        password_var = tk.StringVar()
+        ttk.Entry(main_frame, textvariable=password_var, show="*", width=40).pack(fill=tk.X, pady=(0, 10))
+
+        # Confirm password
+        ttk.Label(main_frame, text="Confirmar contraseña *").pack(anchor=tk.W)
+        confirm_password_var = tk.StringVar()
+        ttk.Entry(main_frame, textvariable=confirm_password_var, show="*", width=40).pack(fill=tk.X, pady=(0, 10))
+
+        # Roles
+        ttk.Label(main_frame, text="Roles").pack(anchor=tk.W, pady=(10, 5))
+        roles_frame = ttk.LabelFrame(main_frame, text="Selecciona roles", padding=10)
+        roles_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+        # Obtener roles disponibles
+        from app.models.role import Role
+        available_roles = self.session.query(Role).filter_by(
+            organization_id=None,  # Roles de sistema
+            is_active=True
+        ).all()
+
+        role_vars = {}
+        for role in available_roles:
+            var = tk.BooleanVar()
+            ttk.Checkbutton(roles_frame, text=f"{role.name} - {role.display_name}", variable=var).pack(anchor=tk.W)
+            role_vars[role.id] = (var, role)
+
+        # Botones
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=(10, 0))
+
+        def save_user():
+            username = username_var.get().strip()
+            email = email_var.get().strip()
+            full_name = full_name_var.get().strip()
+            password = password_var.get()
+            confirm_password = confirm_password_var.get()
+
+            # Validaciones
+            if not username or not email or not password:
+                messagebox.showerror("Error", "Completa los campos obligatorios (*)")
+                return
+
+            if password != confirm_password:
+                messagebox.showerror("Error", "Las contraseñas no coinciden")
+                return
+
+            if len(password) < 8:
+                messagebox.showerror("Error", "La contraseña debe tener al menos 8 caracteres")
+                return
+
+            try:
+                from app.models.user import User
+
+                # Verificar si el usuario ya existe
+                existing = self.session.query(User).filter_by(username=username).first()
+                if existing:
+                    messagebox.showerror("Error", f"El usuario '{username}' ya existe")
+                    return
+
+                # Crear usuario
+                new_user = User(
+                    organization_id=self.user.organization_id,
+                    department_id=self.user.department_id,
+                    username=username,
+                    email=email,
+                    full_name=full_name or None,
+                    is_active=True
+                )
+                new_user.set_password(password)
+
+                # Asignar roles seleccionados
+                for role_id, (var, role) in role_vars.items():
+                    if var.get():
+                        new_user.roles.append(role)
+
+                self.session.add(new_user)
+                self.session.commit()
+
+                # Registrar en auditoría
+                from app.services.audit_service import AuditService
+                audit = AuditService(self.session)
+                audit.log_action(
+                    user_id=self.user.id,
+                    action='user.create',
+                    resource_type='User',
+                    resource_id=new_user.id,
+                    status='success',
+                    details=f"Created user '{username}'",
+                    ip_address='127.0.0.1'
+                )
+
+                messagebox.showinfo("Éxito", f"Usuario '{username}' creado exitosamente")
+                dialog.destroy()
+                self.refresh_users_list()
+
+            except Exception as e:
+                self.session.rollback()
+                messagebox.showerror("Error", f"No se pudo crear el usuario:\n{str(e)}")
+
+        ttk.Button(buttons_frame, text="💾 Guardar", command=save_user).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(buttons_frame, text="❌ Cancelar", command=dialog.destroy).pack(side=tk.LEFT)
+
+    def edit_selected_user(self):
+        """Editar usuario seleccionado"""
+        selection = self.users_tree.selection()
+        if not selection:
+            messagebox.showwarning("Advertencia", "Selecciona un usuario para editar")
+            return
+
+        # Obtener ID del usuario desde los tags
+        item = selection[0]
+        values = self.users_tree.item(item, 'values')
+        username = values[0]
+
+        # Buscar usuario
+        from app.models.user import User
+        user = self.session.query(User).filter_by(
+            username=username,
+            organization_id=self.user.organization_id
+        ).first()
+
+        if not user:
+            messagebox.showerror("Error", "Usuario no encontrado")
+            return
+
+        # Crear diálogo de edición
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"Editar Usuario: {username}")
+        dialog.geometry("500x650")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        main_frame = ttk.Frame(dialog, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(main_frame, text=f"Editar Usuario: {username}", font=('Arial', 14, 'bold')).pack(pady=(0, 20))
+
+        # Email
+        ttk.Label(main_frame, text="Email").pack(anchor=tk.W)
+        email_var = tk.StringVar(value=user.email or "")
+        ttk.Entry(main_frame, textvariable=email_var, width=40).pack(fill=tk.X, pady=(0, 10))
+
+        # Full name
+        ttk.Label(main_frame, text="Nombre completo").pack(anchor=tk.W)
+        full_name_var = tk.StringVar(value=user.full_name or "")
+        ttk.Entry(main_frame, textvariable=full_name_var, width=40).pack(fill=tk.X, pady=(0, 10))
+
+        # Estado
+        state_frame = ttk.LabelFrame(main_frame, text="Estado", padding=10)
+        state_frame.pack(fill=tk.X, pady=(0, 10))
+
+        is_active_var = tk.BooleanVar(value=user.is_active)
+        ttk.Checkbutton(state_frame, text="Usuario activo", variable=is_active_var).pack(anchor=tk.W)
+
+        is_locked_var = tk.BooleanVar(value=user.is_locked)
+        ttk.Checkbutton(state_frame, text="Usuario bloqueado", variable=is_locked_var).pack(anchor=tk.W)
+
+        # Cambiar contraseña
+        password_frame = ttk.LabelFrame(main_frame, text="Cambiar Contraseña (opcional)", padding=10)
+        password_frame.pack(fill=tk.X, pady=(0, 10))
+
+        ttk.Label(password_frame, text="Nueva contraseña").pack(anchor=tk.W)
+        new_password_var = tk.StringVar()
+        ttk.Entry(password_frame, textvariable=new_password_var, show="*", width=40).pack(fill=tk.X, pady=(0, 5))
+
+        ttk.Label(password_frame, text="Confirmar contraseña").pack(anchor=tk.W)
+        confirm_password_var = tk.StringVar()
+        ttk.Entry(password_frame, textvariable=confirm_password_var, show="*", width=40).pack(fill=tk.X)
+
+        # Roles
+        ttk.Label(main_frame, text="Roles").pack(anchor=tk.W, pady=(10, 5))
+        roles_frame = ttk.LabelFrame(main_frame, text="Selecciona roles", padding=10)
+        roles_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+        # Obtener roles disponibles y roles actuales del usuario
+        from app.models.role import Role
+        available_roles = self.session.query(Role).filter_by(
+            organization_id=None,
+            is_active=True
+        ).all()
+
+        current_role_ids = [role.id for role in user.roles]
+        role_vars = {}
+        for role in available_roles:
+            var = tk.BooleanVar(value=role.id in current_role_ids)
+            ttk.Checkbutton(roles_frame, text=f"{role.name} - {role.display_name}", variable=var).pack(anchor=tk.W)
+            role_vars[role.id] = (var, role)
+
+        # Botones
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=(10, 0))
+
+        def save_changes():
+            email = email_var.get().strip()
+            full_name = full_name_var.get().strip()
+            new_password = new_password_var.get()
+            confirm_password = confirm_password_var.get()
+
+            # Validar contraseña si se está cambiando
+            if new_password:
+                if new_password != confirm_password:
+                    messagebox.showerror("Error", "Las contraseñas no coinciden")
+                    return
+                if len(new_password) < 8:
+                    messagebox.showerror("Error", "La contraseña debe tener al menos 8 caracteres")
+                    return
+
+            try:
+                # Actualizar datos
+                user.email = email or None
+                user.full_name = full_name or None
+                user.is_active = is_active_var.get()
+                user.is_locked = is_locked_var.get()
+
+                # Cambiar contraseña si se proporcionó
+                if new_password:
+                    user.set_password(new_password)
+
+                # Actualizar roles
+                user.roles.clear()
+                for role_id, (var, role) in role_vars.items():
+                    if var.get():
+                        user.roles.append(role)
+
+                self.session.commit()
+
+                # Registrar en auditoría
+                from app.services.audit_service import AuditService
+                audit = AuditService(self.session)
+                audit.log_action(
+                    user_id=self.user.id,
+                    action='user.update',
+                    resource_type='User',
+                    resource_id=user.id,
+                    status='success',
+                    details=f"Updated user '{username}'",
+                    ip_address='127.0.0.1'
+                )
+
+                messagebox.showinfo("Éxito", f"Usuario '{username}' actualizado exitosamente")
+                dialog.destroy()
+                self.refresh_users_list()
+
+            except Exception as e:
+                self.session.rollback()
+                messagebox.showerror("Error", f"No se pudo actualizar el usuario:\n{str(e)}")
+
+        ttk.Button(buttons_frame, text="💾 Guardar Cambios", command=save_changes).pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(buttons_frame, text="❌ Cancelar", command=dialog.destroy).pack(side=tk.LEFT)
 
     def copy_to_clipboard(self, text):
         """Copiar texto al portapapeles"""
